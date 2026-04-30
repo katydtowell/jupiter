@@ -1,0 +1,2742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Jupiter's Promises</title>
+
+  <!-- Fonts: Montserrat (display + UI), Lora (body), Material Symbols (icons) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+
+  <style>
+    /* ══════════════════════════════════════════════
+       DESIGN TOKENS — from Figma Jupiter's Promises
+       ══════════════════════════════════════════════ */
+    :root {
+      /* Palette */
+      --c-space:       #0b1120;   /* deepest background */
+      --c-navy:        #111c35;   /* section backgrounds */
+      --c-blue-dark:   #242e55;   /* Figma: Blue/Blue Dark — nav, cards */
+      --c-blue-green:  #9acacf;   /* Figma: Blue/Blue Green — accents, links */
+      --c-red:         #d13c2e;   /* Figma: Red/Red — CTAs, glyphs */
+      --c-gray:        #9b9c9b;   /* Figma: Neutral/Mid Gray — meta text */
+      --c-white:       #f0ece6;   /* warm off-white body text */
+      --c-white-dim:   rgba(240,236,230,0.72);
+      --c-overlay-dark: rgba(11,17,32,0.82);
+
+      /* Typography */
+      --f-display:  'Montserrat', system-ui, sans-serif;
+      --f-ui:       'Montserrat', system-ui, sans-serif;
+      --f-body:     'Lora', 'Georgia', serif;
+
+      /* Figma button tokens */
+      --btn-radius:    70px;
+      --btn-pad-h:     18px;
+      --btn-pad-v:     12px;
+
+      /* Spacing scale */
+      --sp-2:   4px;
+      --sp-4:   8px;
+      --sp-6:  12px;
+      --sp-8:  16px;
+      --sp-10: 20px;
+      --sp-12: 24px;
+      --sp-16: 32px;
+      --sp-20: 40px;
+      --sp-24: 48px;
+      --sp-32: 64px;
+
+      /* Layout */
+      --col-w:       480px;    /* content column max-width */
+      --top-bar-h:    78px;
+      --report-nav-h: 52px;
+      --safe-top:    env(safe-area-inset-top, 0px);
+      --safe-bot:    env(safe-area-inset-bottom, 0px);
+      --bottom-bar-h: 64px;
+
+      /* Transitions */
+      --t-fast: 0.18s ease;
+      --t-med:  0.32s ease;
+      --t-slow: 0.5s  ease;
+    }
+
+    /* ══════════════════════════════════════════════
+       RESET
+       ══════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      background: var(--c-space);
+      color: var(--c-white);
+      font-family: var(--f-body);
+      line-height: 1.75;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; cursor: pointer; }
+
+    /* Material Symbols helper */
+    .icon {
+      font-family: 'Material Symbols Rounded';
+      font-style: normal;
+      font-weight: normal;
+      line-height: 1;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ══════════════════════════════════════════════
+       TOP BAR — always fixed, behind everything
+       ══════════════════════════════════════════════ */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0; right: 0;
+      z-index: 200;
+      min-height: calc(var(--top-bar-h) + var(--safe-top));
+      padding-top: calc(var(--safe-top) + 12px);
+      padding-bottom: 12px;
+      background: var(--c-blue-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-8);
+      padding-inline: var(--sp-10);
+    }
+
+    .top-bar__brand {
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--c-blue-green);
+      flex-shrink: 0;
+    }
+
+    .top-bar__user {
+      font-family: var(--f-ui);
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--c-white-dim);
+      letter-spacing: 0.03em;
+      line-height: 1.55;
+      text-align: right;
+      max-width: 220px;
+    }
+
+    /* ══════════════════════════════════════════════
+       LIGHT MODE OVERRIDES
+       Applied when <html data-theme="light">
+       Strategy: flip content section backgrounds/text globally,
+       then re-scope dark-mode variables back on elements that
+       must stay dark (cover, top/bottom bars, all slide-up panels).
+       ══════════════════════════════════════════════ */
+    [data-theme="light"] {
+      --c-space:        #f5f2ee;
+      --c-navy:         #ffffff;
+      --c-white:        #1a1e2e;
+      --c-white-dim:    rgba(26,30,46,0.65);
+      --c-overlay-dark: rgba(240,236,230,0.85);
+    }
+
+    [data-theme="light"] body { background: var(--c-space); }
+
+    /* ── Top bar: always dark ── */
+    [data-theme="light"] .top-bar         { background: #242e55; }
+    [data-theme="light"] .top-bar__brand  { color: #9acacf; }
+    [data-theme="light"] .top-bar__user   { color: rgba(240,236,230,0.72); }
+
+    /* ── Report nav: light in light mode ── */
+    [data-theme="light"] .report-nav {
+      background: rgba(255,255,255,0.96);
+      border-bottom-color: rgba(26,30,46,0.12);
+    }
+    [data-theme="light"] .report-nav__label { color: #1a1e2e; }
+    [data-theme="light"] .nav-icon-btn       { color: rgba(26,30,46,0.55); }
+    [data-theme="light"] .nav-icon-btn:hover { color: #1a1e2e; background: rgba(26,30,46,0.07); }
+
+    /* ── Bottom bar: always dark ── */
+    [data-theme="light"] .bottom-bar { background: #242e55; }
+    [data-theme="light"] .bb-btn     { color: rgba(240,236,230,0.72); }
+    [data-theme="light"] .bb-btn:hover,
+    [data-theme="light"] .bb-btn.active { color: #9acacf; }
+    [data-theme="light"] .bb-divider    { background: rgba(240,236,230,0.15); }
+
+    /* ── Cover: always dark (sits on galaxy image) ──
+       Re-scope variables back to original dark-mode values
+       so every descendant that uses var(--c-white) etc. stays light. */
+    [data-theme="light"] .cover {
+      --c-white:     #f0ece6;
+      --c-white-dim: rgba(240,236,230,0.72);
+      --c-blue-dark: #242e55;
+    }
+
+    /* ── Blue-green (#9acacf) used as text: too light on white ──
+       Replace with a legible dark teal for content-area elements. */
+    [data-theme="light"] .sub-heading   { color: #1a6070; }
+    [data-theme="light"] .pull-quote p  { color: #1a6070; }
+    [data-theme="light"] .rule          { color: #1a6070; opacity: 0.65; }
+    [data-theme="light"] .rule::before,
+    [data-theme="light"] .rule::after   { background: #1a6070; }
+    /* Inline glossary term links */
+    [data-theme="light"] .glos          { color: #1a6070; border-bottom-color: rgba(26,96,112,0.45); }
+    /* Card headings */
+    [data-theme="light"] .card__title   { color: #1a6070; }
+    /* TOC sub-title text — gray can be too faint on white */
+    [data-theme="light"] .toc-sub       { color: rgba(26,30,46,0.5); }
+
+    /* ── Cards: replace semi-opaque dark blue with a light tint ── */
+    [data-theme="light"] .card {
+      background: rgba(154,202,207,0.10);
+      border-color: rgba(26,96,112,0.18);
+    }
+
+    /* ── Pull quote: nudge bg to match light palette ── */
+    [data-theme="light"] .pull-quote { background: rgba(26,96,112,0.06); }
+
+    /* Chapter illustration: shift blue-green → dark navy in light mode.
+       hue-rotate(45deg) moves hue from ~183° (teal) to ~228° (navy-blue);
+       saturate + brightness bring it down to roughly --c-blue-dark (#242e55). */
+    [data-theme="light"] .chapter-illustration__img {
+      filter: hue-rotate(45deg) saturate(250%) brightness(0.32);
+      opacity: 0.35;
+    }
+
+    /* ── Promise list dividers ── */
+    [data-theme="light"] .promise-list li { border-bottom-color: rgba(26,30,46,0.09); }
+
+    /* ── Back-to-top button: stays red (Jupiter's storm) in light mode ──
+       Only override: restore light icon color (--c-white flips dark globally),
+       and suppress the glow which looks heavy on a light background. */
+    [data-theme="light"] .back-to-top       { color: #f0ece6; box-shadow: none; }
+    [data-theme="light"] .back-to-top:hover { filter: brightness(1.08); }
+
+    /* ── Hard-coded dark-bg elements: restore light text ──
+       These use background: var(--c-blue-dark) which is a fixed hex,
+       not a variable that flips — so text must be restored explicitly. */
+    [data-theme="light"] .glos-tip {
+      --c-white: #f0ece6;
+    }
+    [data-theme="light"] .note-popover {
+      --c-white:     #f0ece6;
+      --c-white-dim: rgba(240,236,230,0.72);
+    }
+
+    /* ── Slide-up panels: re-scope to dark-mode variables ──
+       All panels use var(--c-navy) for their background and var(--c-white)/
+       var(--c-white-dim) for internal text. By re-declaring those variables
+       here at container scope, every descendant automatically gets the
+       original dark-mode values without touching individual child rules. */
+    [data-theme="light"] .menu-panel,
+    [data-theme="light"] .note-drawer,
+    [data-theme="light"] .journal-panel,
+    [data-theme="light"] .share-sheet,
+    [data-theme="light"] .note-hint {
+      --c-white:     #f0ece6;
+      --c-white-dim: rgba(240,236,230,0.72);
+      --c-navy:      #111c35;
+      --c-space:     #0b1120;
+    }
+    /* note-hint pseudo-element arrow uses var(--c-navy) for fill */
+
+    /* ══════════════════════════════════════════════
+       REPORT NAV — slides in below top bar on scroll
+       ══════════════════════════════════════════════ */
+    .report-nav {
+      position: fixed;
+      top: calc(var(--top-bar-h) + var(--safe-top));
+      left: 0; right: 0;
+      z-index: 199;
+      height: var(--report-nav-h);
+      background: rgba(17, 28, 53, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(154,202,207,0.14);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-inline: var(--sp-8);
+      transform: translateY(-100%);
+      transition: transform var(--t-med);
+    }
+    .report-nav.visible { transform: translateY(0); }
+
+    /* Prev/title/next group — takes all space left of the bookmark */
+    .report-nav__nav-group {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .report-nav__label {
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--c-blue-green);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nav-icon-btn {
+      background: none;
+      border: none;
+      color: var(--c-white-dim);
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: color var(--t-fast), background var(--t-fast);
+    }
+    .nav-icon-btn:hover  { color: var(--c-white); background: rgba(154,202,207,0.08); }
+    .nav-icon-btn:active { background: rgba(154,202,207,0.15); }
+    .nav-icon-btn .icon  { font-size: 22px; }
+
+    .bookmark-toggle {
+      background: none;
+      border: none;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bookmark-toggle img {
+      width: 20px;
+      height: 26px;
+      transition: transform var(--t-fast);
+    }
+    .bookmark-toggle:active img { transform: scale(1.25); }
+
+    /* ══════════════════════════════════════════════
+       BACK TO TOP
+       ══════════════════════════════════════════════ */
+    .back-to-top {
+      position: fixed;
+      bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-6));
+      right: var(--sp-8);
+      z-index: 190;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: var(--c-red);
+      color: var(--c-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 24px rgba(209,60,46,0.45);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px) scale(0.9);
+      transition: opacity var(--t-med), transform var(--t-med);
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    .back-to-top .icon { font-size: 22px; }
+
+    /* ══════════════════════════════════════════════
+       LOADING OVERLAY
+       ══════════════════════════════════════════════ */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: var(--c-space);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+    .loading-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 2px solid rgba(154,202,207,0.18);
+      border-top-color: var(--c-blue-green);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════════════
+       SHARED SECTION STYLES
+       ══════════════════════════════════════════════ */
+    .section {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Scroll targets offset for the two fixed bars */
+    .scroll-target {
+      scroll-margin-top: calc(var(--top-bar-h) + var(--report-nav-h) + var(--safe-top) + 8px);
+    }
+
+    /* Content column */
+    .col {
+      max-width: var(--col-w);
+      margin-inline: auto;
+      padding-inline: var(--sp-10);
+    }
+
+    /* Typography utilities */
+    .eyebrow {
+      font-family: var(--f-ui);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--c-red);
+      margin-bottom: var(--sp-6);
+    }
+
+    .display-heading {
+      font-family: var(--f-display);
+      font-weight: 600;
+      font-size: clamp(26px, 6vw, 38px);
+      line-height: 1.18;
+      letter-spacing: 0.02em;
+      color: var(--c-white);
+      margin-bottom: var(--sp-4);
+    }
+
+    .sub-heading {
+      font-family: var(--f-display);
+      font-weight: 400;
+      font-size: clamp(14px, 3vw, 17px);
+      letter-spacing: 0.1em;
+      color: var(--c-blue-green);
+      margin-bottom: var(--sp-10);
+    }
+
+    .body-lead {
+      font-size: clamp(15px, 3.5vw, 17px);
+      font-style: italic;
+      color: var(--c-white);
+      line-height: 1.8;
+      margin-bottom: var(--sp-8);
+    }
+
+    p {
+      font-size: 15px;
+      color: var(--c-white-dim);
+      line-height: 1.85;
+      margin-bottom: var(--sp-8);
+    }
+
+    /* Horizontal rule with glyph */
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-6);
+      margin-block: var(--sp-12);
+      color: var(--c-blue-green);
+      opacity: 0.45;
+    }
+    .rule::before, .rule::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--c-blue-green);
+    }
+    .rule span { font-size: 15px; flex-shrink: 0; }
+
+    /* Pull quote */
+    .pull-quote {
+      border-left: 3px solid var(--c-red);
+      background: rgba(154,202,207,0.05);
+      border-radius: 0 8px 8px 0;
+      padding: var(--sp-8) var(--sp-10);
+      margin-block: var(--sp-12);
+    }
+    .pull-quote p {
+      font-family: var(--f-display);
+      font-style: italic;
+      font-size: 15px;
+      color: var(--c-blue-green);
+      margin: 0;
+      line-height: 1.65;
+    }
+
+    /* Aspect card */
+    .card {
+      background: rgba(36,46,85,0.38);
+      border: 1px solid rgba(154,202,207,0.14);
+      border-radius: 12px;
+      padding: var(--sp-10);
+      margin-bottom: var(--sp-8);
+    }
+    .card__title {
+      font-family: var(--f-ui);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--c-blue-green);
+      margin-bottom: 4px;
+    }
+    .card__type {
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--c-red);
+      margin-bottom: var(--sp-6);
+    }
+    .card p { font-size: 14px; margin: 0; }
+
+    /* Glossary term */
+    .glos {
+      color: var(--c-blue-green);
+      border-bottom: 1px dashed rgba(154,202,207,0.55);
+      cursor: pointer;
+      position: relative;
+      white-space: nowrap;
+    }
+    .glos-tip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 210px;
+      background: var(--c-blue-dark);
+      border: 1px solid rgba(154,202,207,0.25);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-family: var(--f-ui);
+      font-size: 12px;
+      font-weight: 500;
+      font-style: normal;
+      line-height: 1.55;
+      color: var(--c-white);
+      letter-spacing: 0;
+      white-space: normal;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--t-fast);
+      z-index: 50;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .glos-tip::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: rgba(154,202,207,0.25);
+    }
+    .glos:hover .glos-tip,
+    .glos.open .glos-tip { opacity: 1; }
+
+    /* ══════════════════════════════════════════════
+       COVER SECTION
+       ══════════════════════════════════════════════ */
+    .cover {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      padding-top: calc(var(--top-bar-h) + var(--safe-top));
+    }
+
+    .cover__bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .cover__galaxy {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center top;
+    }
+    .cover__fade {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(11,17,32,0.25) 0%,
+        rgba(11,17,32,0.05) 25%,
+        rgba(11,17,32,0.15) 55%,
+        rgba(11,17,32,0.96) 88%,
+        rgba(11,17,32,1)    100%
+      );
+    }
+
+    /* Jupiter + tagline side-by-side row */
+    .cover__mid {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-4);
+      /* Break out of content left padding so Jupiter is flush to the column edge */
+      margin-left: calc(-1 * var(--sp-10));
+      margin-top: var(--sp-2);
+      margin-bottom: var(--sp-4);
+    }
+
+    .cover__jupiter {
+      display: block;
+      width: 65%;
+      flex-shrink: 0;
+      height: auto;
+      pointer-events: none;
+    }
+
+    .cover__content {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: var(--sp-12) var(--sp-10) 0;
+      max-width: var(--col-w);
+      margin-inline: auto;
+      width: 100%;
+    }
+
+
+    .cover__logo-wrap {
+      display: block;
+      margin-bottom: var(--sp-4);
+    }
+
+    .cover__logo {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .cover__author {
+      display: block;
+      width: 100%;
+      text-align: right;
+      font-family: var(--f-ui);
+      font-weight: 300;
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--c-white);
+      margin: 5px 0 0;
+      line-height: 1;
+    }
+
+    .cover__tagline {
+      font-family: var(--f-ui);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 18px;
+      color: var(--c-white-dim);
+      text-align: right;
+      line-height: 1.55;
+      margin: 0;
+      align-self: center;
+      text-wrap: pretty;
+    }
+
+
+    .cover__footer {
+      margin-top: auto;
+      padding-bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-12));
+      padding-top: var(--sp-16);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-12);
+    }
+
+
+    /* Scroll-down CTA */
+    .scroll-cta {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--c-white-dim);
+      transition: color var(--t-fast);
+    }
+    .scroll-cta:hover { color: var(--c-blue-green); }
+    .scroll-cta__label {
+      font-family: var(--f-ui);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+    .scroll-cta__circle {
+      width: 44px; height: 44px;
+      background: var(--c-red);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bob 2.2s ease-in-out infinite;
+      box-shadow: 0 4px 16px rgba(209,60,46,0.4);
+      color: var(--c-white);
+    }
+    .scroll-cta .icon { font-size: 22px; color: var(--c-white); }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      55%       { transform: translateY(7px); }
+    }
+
+    /* ══════════════════════════════════════════════
+       TABLE OF CONTENTS
+       ══════════════════════════════════════════════ */
+    .toc-section {
+      background: var(--c-navy);
+      padding-top: calc(var(--top-bar-h) + var(--report-nav-h) + var(--safe-top) + var(--sp-24));
+      padding-bottom: var(--sp-32);
+    }
+
+    .toc-intro {
+      margin-bottom: var(--sp-16);
+    }
+
+    .toc-list { list-style: none; }
+
+    .toc-item {
+      border-top: 1px solid rgba(154,202,207,0.1);
+    }
+    .toc-item:last-child { border-bottom: 1px solid rgba(154,202,207,0.1); }
+
+    .toc-link {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-8);
+      padding-block: var(--sp-10);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity var(--t-fast);
+    }
+    .toc-link:active { opacity: 0.6; }
+
+    .toc-num {
+      font-family: var(--f-ui);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: var(--c-red);
+      min-width: 26px;
+      flex-shrink: 0;
+    }
+
+    .toc-info { flex: 1; min-width: 0; }
+
+    .toc-name {
+      font-family: var(--f-display);
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--c-white);
+      letter-spacing: 0.04em;
+      line-height: 1.35;
+      display: block;
+    }
+
+    .toc-sub {
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--c-gray);
+      margin-top: 3px;
+      display: block;
+    }
+
+    .toc-bm {
+      width: 18px; height: 23px;
+      flex-shrink: 0;
+      opacity: 0.55;
+      transition: opacity var(--t-fast);
+    }
+
+    .toc-link:hover .toc-bm { opacity: 0.85; }
+
+    /* ══════════════════════════════════════════════
+       CHAPTER SECTIONS
+       ══════════════════════════════════════════════ */
+    .chapter-section {
+      background: var(--c-space);
+      padding-top: calc(var(--top-bar-h) + var(--report-nav-h) + var(--safe-top) + var(--sp-24));
+      padding-bottom: var(--sp-32);
+    }
+
+    /* Illustration placeholder */
+    .chapter-illustration {
+      position: absolute;
+      top: 0;
+      left: 0; right: 0;
+      height: calc(var(--top-bar-h) + var(--report-nav-h) + var(--safe-top) + var(--sp-24));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .chapter-illustration__img {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      opacity: 0.28;
+    }
+    /* Thin gradient line at top of each chapter */
+    .chapter-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--c-blue-green) 50%, transparent 100%);
+      opacity: 0.35;
+    }
+
+    /* Promise list */
+    .promise-list {
+      list-style: none;
+      margin-block: var(--sp-8) var(--sp-16);
+    }
+    .promise-list li {
+      display: flex;
+      gap: var(--sp-8);
+      padding-block: var(--sp-6);
+      border-bottom: 1px solid rgba(154,202,207,0.08);
+      font-family: var(--f-body);
+      font-size: 15px;
+      color: var(--c-white-dim);
+      line-height: 1.75;
+      align-items: flex-start;
+    }
+    .promise-list li::before {
+      content: '♃';
+      color: var(--c-blue-green);
+      flex-shrink: 0;
+      font-size: 22px;
+      line-height: 1;
+      margin-top: 6px;
+    }
+
+    .report-footer {
+      text-align: center;
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--c-gray);
+      line-height: 1.9;
+      padding-bottom: calc(var(--sp-16) + var(--safe-bot));
+    }
+
+    /* ══════════════════════════════════════════════
+       DESKTOP & TABLET RESPONSIVE
+       ══════════════════════════════════════════════ */
+
+    /* Tablet (≥768px): wider column, side breathing room */
+    @media (min-width: 768px) {
+      :root { --col-w: 540px; }
+
+      .col { padding-inline: var(--sp-16); }
+
+      .cover__logo { width: 100%; }
+    }
+
+    /* Desktop (≥1024px): full reading experience, space on sides */
+    @media (min-width: 1024px) {
+      :root {
+        --col-w: 600px;
+        --top-bar-h: 78px;
+        --report-nav-h: 56px;
+      }
+
+      body {
+        background-image: url('http://localhost:3845/assets/1eabb080cd5c5246df113225f102794867f4755e.png');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center top;
+      }
+
+      /* All non-cover sections get a translucent panel on desktop */
+      .toc-section,
+      .chapter-section {
+        background: rgba(11,17,32,0.9);
+        backdrop-filter: blur(2px);
+      }
+
+      .cover__galaxy { opacity: 0.65; }
+      .cover__logo { width: 100%; }
+
+      p { font-size: 16px; }
+
+      /* Must clear the bottom bar (64px) + breathing room */
+      .back-to-top {
+        bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-8));
+        right: var(--sp-12);
+        width: 52px; height: 52px;
+      }
+      /* Explore button: same — ensure footer clears the bottom bar on desktop */
+      .cover__footer {
+        padding-bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-16));
+      }
+
+      /* Light mode overrides for desktop */
+      [data-theme="light"] body {
+        background-image: none;
+        background-color: var(--c-space);
+      }
+      /* Cover: galaxy is 0.65 opacity so the body bg bleeds through.
+         Give .cover its own dark underlay so it stays space-dark in light mode. */
+      [data-theme="light"] .cover {
+        background-color: #0b1120;
+      }
+      [data-theme="light"] .toc-section,
+      [data-theme="light"] .chapter-section {
+        background: var(--c-navy);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+    }
+
+    /* Wide desktop (≥1280px): expand column slightly */
+    @media (min-width: 1280px) {
+      :root { --col-w: 640px; }
+    }
+
+    /* ══════════════════════════════════════════════
+       BOTTOM TOOLBAR
+       ══════════════════════════════════════════════ */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 190;
+      height: calc(var(--bottom-bar-h) + var(--safe-bot));
+      padding-bottom: var(--safe-bot);
+      background: var(--c-blue-dark);
+      border-top: 1px solid rgba(154,202,207,0.12);
+      display: flex;
+      align-items: stretch;
+    }
+    .bb-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--c-white-dim);
+      transition: color var(--t-fast), background var(--t-fast);
+      cursor: pointer;
+      padding: 0;
+      min-width: 0;
+    }
+    .bb-btn:hover   { color: var(--c-white); background: rgba(154,202,207,0.07); }
+    .bb-btn.active  { color: var(--c-red); }
+    .bb-btn.active .icon { color: var(--c-red); }
+    .bb-btn .icon   { font-size: 22px; }
+    .bb-label {
+      font-family: var(--f-ui);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Compensate body bottom for toolbar */
+    body { padding-bottom: calc(var(--bottom-bar-h) + var(--safe-bot)); }
+
+    /* ══════════════════════════════════════════════
+       MENU OVERLAY + PANEL
+       ══════════════════════════════════════════════ */
+    .menu-overlay {
+      position: fixed; inset: 0;
+      z-index: 300;
+      background: rgba(11,17,32,0.6);
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--t-med);
+    }
+    .menu-overlay.open { opacity: 1; pointer-events: all; }
+
+    .menu-panel {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      z-index: 301;
+      width: min(88vw, 340px);
+      background: var(--c-navy);
+      border-left: 1px solid rgba(154,202,207,0.12);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform var(--t-med);
+      overflow: hidden;
+    }
+    .menu-panel.open { transform: translateX(0); }
+
+    .menu-panel__header {
+      display: flex;
+      align-items: center;
+      padding: calc(var(--safe-top) + 16px) var(--sp-10) 12px;
+      gap: var(--sp-4);
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(154,202,207,0.08);
+    }
+    .menu-panel__title {
+      flex: 1;
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--c-blue-green);
+    }
+    .menu-tabs {
+      display: flex;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(154,202,207,0.12);
+    }
+    .menu-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 10px var(--sp-8);
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--c-gray);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color var(--t-fast), border-color var(--t-fast);
+    }
+    .menu-tab.active { color: var(--c-blue-green); border-bottom-color: var(--c-blue-green); }
+    .menu-panel__close {
+      background: none; border: none;
+      color: var(--c-gray);
+      min-width: 40px; min-height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 8px;
+      transition: color var(--t-fast);
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .menu-panel__close:hover { color: var(--c-white); }
+    .menu-panel__close .icon { font-size: 22px; }
+
+    .menu-panel__body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .menu-tab-content { display: none; padding: var(--sp-8) 0; }
+    .menu-tab-content.active { display: block; }
+
+    /* Chapter items in menu */
+    .menu-chapter {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-8);
+      padding: var(--sp-8) var(--sp-10);
+      cursor: pointer;
+      border-bottom: 1px solid rgba(154,202,207,0.07);
+      transition: background var(--t-fast);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .menu-chapter:hover { background: rgba(154,202,207,0.05); }
+    .menu-chapter__num {
+      font-family: var(--f-ui);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: var(--c-red);
+      min-width: 22px;
+      flex-shrink: 0;
+    }
+    .menu-chapter__info { flex: 1; min-width: 0; }
+    .menu-chapter__name {
+      font-family: var(--f-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--c-white);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .menu-chapter__sub {
+      font-family: var(--f-ui);
+      font-size: 10px;
+      color: var(--c-gray);
+      display: block;
+      margin-top: 2px;
+    }
+    .menu-chapter__bm {
+      width: 14px; height: 18px;
+      flex-shrink: 0;
+      opacity: 0.45;
+      transition: opacity var(--t-fast);
+    }
+    .menu-chapter__bm.on { opacity: 1; }
+
+    /* Notes list in menu */
+    .notes-empty {
+      padding: var(--sp-16) var(--sp-10);
+      font-family: var(--f-ui);
+      font-size: 12px;
+      color: var(--c-gray);
+      text-align: center;
+      line-height: 1.7;
+    }
+    .note-item {
+      padding: var(--sp-8) var(--sp-10);
+      border-bottom: 1px solid rgba(154,202,207,0.07);
+    }
+    .note-item__chapter {
+      font-family: var(--f-ui);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--c-red);
+      margin-bottom: 4px;
+    }
+    .note-item__quote {
+      font-family: var(--f-body);
+      font-style: italic;
+      font-size: 12px;
+      color: var(--c-gray);
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .note-item__text {
+      font-family: var(--f-ui);
+      font-size: 12px;
+      color: var(--c-white-dim);
+      margin-bottom: var(--sp-6);
+      line-height: 1.5;
+    }
+    .note-item__actions {
+      display: flex;
+      gap: var(--sp-4);
+    }
+    .note-action-btn {
+      background: none;
+      border: 1px solid rgba(154,202,207,0.18);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-family: var(--f-ui);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+      transition: background var(--t-fast), color var(--t-fast);
+    }
+    .note-action-btn       { color: var(--c-gray); }
+    .note-action-btn:hover { background: rgba(154,202,207,0.08); color: var(--c-white); }
+    .note-action-btn.danger:hover { background: rgba(209,60,46,0.15); color: var(--c-red); border-color: var(--c-red); }
+    .note-action-btn .icon { font-size: 13px; }
+
+    /* ══════════════════════════════════════════════
+       NOTE DRAWER (slides up from bottom)
+       ══════════════════════════════════════════════ */
+    .note-drawer {
+      position: fixed;
+      left: 0; right: 0;
+      bottom: calc(var(--bottom-bar-h) + var(--safe-bot));
+      z-index: 280;
+      background: var(--c-navy);
+      border-top: 1px solid rgba(154,202,207,0.18);
+      border-radius: 16px 16px 0 0;
+      padding: var(--sp-8) var(--sp-10) var(--sp-10);
+      transform: translateY(calc(100% + var(--bottom-bar-h) + var(--safe-bot) + 20px));
+      transition: transform var(--t-med);
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
+    }
+    .note-drawer.open { transform: translateY(0); }
+
+    .note-drawer__top {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sp-6);
+      margin-bottom: var(--sp-6);
+    }
+    .note-drawer__quote {
+      flex: 1;
+      font-family: var(--f-body);
+      font-style: italic;
+      font-size: 12px;
+      color: var(--c-gray);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .note-drawer__quote::before { content: '"'; }
+    .note-drawer__quote::after  { content: '"'; }
+    .note-drawer__close-btn {
+      background: none; border: none;
+      color: var(--c-gray); cursor: pointer;
+      min-width: 36px; min-height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: -4px;
+    }
+    .note-drawer__close-btn .icon { font-size: 20px; }
+    .note-drawer__input {
+      width: 100%;
+      background: rgba(36,46,85,0.5);
+      border: 1px solid rgba(154,202,207,0.2);
+      border-radius: 10px;
+      padding: var(--sp-8) var(--sp-8);
+      font-family: var(--f-ui);
+      font-size: 14px;
+      color: var(--c-white);
+      resize: none;
+      line-height: 1.6;
+      outline: none;
+      transition: border-color var(--t-fast);
+    }
+    .note-drawer__input::placeholder { color: var(--c-gray); }
+    .note-drawer__input:focus { border-color: rgba(154,202,207,0.5); }
+    .note-drawer__footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--sp-6);
+      margin-top: var(--sp-6);
+    }
+    .note-drawer__cancel {
+      background: none; border: 1px solid rgba(154,202,207,0.18);
+      border-radius: var(--btn-radius); padding: 8px 18px;
+      font-family: var(--f-ui); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.06em; color: var(--c-gray); cursor: pointer;
+      transition: color var(--t-fast);
+    }
+    .note-drawer__cancel:hover { color: var(--c-white); }
+    .note-drawer__save {
+      background: var(--c-red); border: none;
+      border-radius: var(--btn-radius); padding: 8px 20px;
+      font-family: var(--f-ui); font-size: 12px; font-weight: 800;
+      letter-spacing: 0.06em; color: var(--c-white); cursor: pointer;
+      transition: filter var(--t-fast);
+      box-shadow: 0 2px 12px rgba(209,60,46,0.35);
+    }
+    .note-drawer__save:hover { filter: brightness(1.1); }
+
+    /* ══════════════════════════════════════════════
+       ANNOTATIONS IN TEXT
+       ══════════════════════════════════════════════ */
+    .annotated-text {
+      background: rgba(154,202,207,0.15);
+      border-bottom: 1.5px solid rgba(154,202,207,0.55);
+      border-radius: 2px;
+      cursor: default;
+    }
+    .note-marker {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 17px; height: 17px;
+      background: var(--c-red);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      vertical-align: super;
+      margin-left: 2px;
+      flex-shrink: 0;
+      transition: transform var(--t-fast), box-shadow var(--t-fast);
+      box-shadow: 0 1px 6px rgba(209,60,46,0.45);
+    }
+    .note-marker:hover { transform: scale(1.2); }
+    .note-marker .icon { font-size: 10px; color: #fff; }
+
+    /* ══════════════════════════════════════════════
+       NOTE POPOVER
+       ══════════════════════════════════════════════ */
+    .note-popover {
+      position: fixed;
+      z-index: 400;
+      width: 260px;
+      background: var(--c-blue-dark);
+      border: 1px solid rgba(154,202,207,0.22);
+      border-radius: 12px;
+      padding: var(--sp-8);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+      display: none;
+    }
+    .note-popover:not([aria-hidden="true"]) { display: block; }
+    .note-popover__text {
+      font-family: var(--f-ui);
+      font-size: 13px;
+      color: var(--c-white);
+      line-height: 1.6;
+      margin-bottom: var(--sp-8);
+      white-space: pre-wrap;
+    }
+    .note-popover__actions {
+      display: flex;
+      gap: var(--sp-4);
+      justify-content: flex-end;
+    }
+    .note-popover__btn {
+      background: none;
+      border: 1px solid rgba(154,202,207,0.22);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--c-blue-green);
+      transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+    }
+    .note-popover__btn:hover { background: rgba(154,202,207,0.1); }
+    .note-popover__btn--delete { color: var(--c-gray); }
+    .note-popover__btn--delete:hover { background: rgba(209,60,46,0.15); color: var(--c-red); border-color: var(--c-red); }
+    .note-popover .icon { font-size: 14px; }
+
+    /* ══════════════════════════════════════════════
+       JOURNAL PANEL (slide up from bottom)
+       ══════════════════════════════════════════════ */
+    .journal-panel {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 290;
+      height: 75vh;
+      max-height: 600px;
+      background: var(--c-navy);
+      border-top: 1px solid rgba(154,202,207,0.18);
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform var(--t-med);
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+    }
+    .journal-panel.open { transform: translateY(0); }
+    .journal-panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-10) var(--sp-10) var(--sp-6);
+      border-bottom: 1px solid rgba(154,202,207,0.1);
+      flex-shrink: 0;
+    }
+    .journal-panel__title {
+      font-family: var(--f-ui);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--c-blue-green);
+    }
+    .journal-panel__close {
+      background: none; border: none;
+      color: var(--c-gray); cursor: pointer;
+      min-width: 40px; min-height: 40px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .journal-panel__close .icon { font-size: 22px; }
+    .journal-panel__textarea {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      padding: var(--sp-10);
+      font-family: var(--f-body);
+      font-size: 15px;
+      color: var(--c-white);
+      line-height: 1.8;
+      resize: none;
+      overflow-y: auto;
+    }
+    .journal-panel__textarea::placeholder { color: var(--c-gray); }
+    .journal-panel__footer {
+      padding: var(--sp-8) var(--sp-10);
+      padding-bottom: calc(var(--sp-8) + var(--safe-bot));
+      border-top: 1px solid rgba(154,202,207,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .journal-wordcount {
+      font-family: var(--f-ui);
+      font-size: 11px;
+      color: var(--c-gray);
+    }
+    .journal-panel__save-btn {
+      background: var(--c-red); border: none;
+      border-radius: var(--btn-radius); padding: 8px 20px;
+      font-family: var(--f-ui); font-size: 12px; font-weight: 800;
+      letter-spacing: 0.06em; color: var(--c-white); cursor: pointer;
+      transition: filter var(--t-fast);
+    }
+    .journal-panel__save-btn:hover { filter: brightness(1.12); }
+    .journal-panel__saved {
+      font-family: var(--f-ui); font-size: 11px;
+      color: var(--c-blue-green); opacity: 0.85;
+    }
+
+    /* Active chapter highlight in menu */
+    .menu-chapter--active { background: rgba(154,202,207,0.06); }
+    .menu-chapter--active .menu-chapter__name { color: var(--c-blue-green); }
+
+    /* Notes list container */
+    .notes-list { list-style: none; padding: 0; margin: 0; }
+
+    /* ══════════════════════════════════════════════
+       SHARE SHEET
+       ══════════════════════════════════════════════ */
+    .share-sheet {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 290;
+      background: var(--c-navy);
+      border-top: 1px solid rgba(154,202,207,0.18);
+      border-radius: 20px 20px 0 0;
+      padding: var(--sp-10) var(--sp-10) calc(var(--sp-10) + var(--safe-bot));
+      transform: translateY(100%);
+      transition: transform var(--t-med);
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+    }
+    .share-sheet.open { transform: translateY(0); }
+    .share-sheet__title {
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--c-blue-green);
+      margin-bottom: var(--sp-10);
+      text-align: center;
+    }
+    .share-sheet__option {
+      display: flex; align-items: center; gap: var(--sp-8);
+      width: 100%;
+      background: rgba(36,46,85,0.4);
+      border: 1px solid rgba(154,202,207,0.12);
+      border-radius: 10px;
+      padding: var(--sp-8) var(--sp-10);
+      margin-bottom: var(--sp-6);
+      cursor: pointer;
+      font-family: var(--f-ui); font-size: 13px; font-weight: 600;
+      color: var(--c-white-dim);
+      transition: background var(--t-fast), color var(--t-fast);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .share-sheet__option:hover { background: rgba(36,46,85,0.85); color: var(--c-white); }
+    .share-sheet__option .icon { font-size: 20px; color: var(--c-blue-green); }
+    .share-sheet__cancel {
+      display: block; width: 100%; margin-top: var(--sp-4);
+      background: none; border: 1px solid rgba(154,202,207,0.15);
+      border-radius: var(--btn-radius); padding: 10px;
+      font-family: var(--f-ui); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.06em; color: var(--c-gray); cursor: pointer;
+      transition: color var(--t-fast);
+    }
+    .share-sheet__cancel:hover { color: var(--c-white); }
+
+    /* Share overlay — no blur so the sheet text stays sharp */
+    .share-overlay {
+      position: fixed; inset: 0;
+      z-index: 288;
+      background: rgba(11,17,32,0.55);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--t-med);
+    }
+    .share-overlay.open { opacity: 1; pointer-events: all; }
+
+    /* ══════════════════════════════════════════════
+       NOTE HINT TOOLTIP
+       ══════════════════════════════════════════════ */
+    .note-hint {
+      position: fixed;
+      z-index: 500;
+      bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      background: var(--c-navy);
+      border: 1px solid rgba(154,202,207,0.25);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-family: var(--f-ui);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-white);
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    /* downward-pointing arrow — border layer */
+    .note-hint::before {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px; height: 8px;
+      background: rgba(154,202,207,0.25);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+    /* downward-pointing arrow — fill layer */
+    .note-hint::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 10px; height: 6px;
+      background: var(--c-navy);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+    .note-hint.visible {
+      opacity: 1;
+      pointer-events: none;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       FIXED TOP BAR
+       ══════════════════════════════════════════ -->
+  <header class="top-bar" role="banner">
+    <span class="top-bar__brand">Tarot.com</span>
+    <span class="top-bar__user">This report is for Sarah Johnson, born April 15, 1990 at 3:00am in Chicago, IL</span>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       STICKY REPORT NAV
+       ══════════════════════════════════════════ -->
+  <nav class="report-nav" id="reportNav" aria-label="Chapter navigation">
+    <div class="report-nav__nav-group">
+      <button class="nav-icon-btn" id="navPrev" aria-label="Previous section">
+        <span class="icon">chevron_left</span>
+      </button>
+      <span class="report-nav__label" id="navLabel">Cover</span>
+      <button class="nav-icon-btn" id="navNext" aria-label="Next section">
+        <span class="icon">chevron_right</span>
+      </button>
+    </div>
+    <button class="bookmark-toggle" id="bookmarkBtn" aria-label="Bookmark this section">
+      <img id="bmImg"
+           src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+           alt="Bookmark" width="20" height="26">
+    </button>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       LOADING OVERLAY
+       ══════════════════════════════════════════ -->
+  <div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite" aria-hidden="true">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       BACK TO TOP
+       ══════════════════════════════════════════ -->
+  <button class="back-to-top" id="backToTop" aria-label="Return to top of report">
+    <span class="icon">expand_less</span>
+  </button>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1: COVER
+       ══════════════════════════════════════════ -->
+  <section class="section cover" id="cover" data-index="0" data-label="Cover">
+
+    <!-- Starfield background -->
+    <div class="cover__bg">
+      <img class="cover__galaxy"
+           src="http://localhost:3845/assets/1eabb080cd5c5246df113225f102794867f4755e.png"
+           alt="" aria-hidden="true">
+      <div class="cover__fade" aria-hidden="true"></div>
+    </div>
+
+    <!-- Cover text content -->
+    <div class="cover__content">
+
+      <div class="cover__logo-wrap">
+        <img class="cover__logo"
+             src="title-logo.svg"
+             alt="Jupiter's Promises">
+        <p class="cover__author">By Stephanie Clement</p>
+      </div>
+
+      <!-- Jupiter + tagline side by side -->
+      <div class="cover__mid">
+        <img class="cover__jupiter"
+             src="http://localhost:3845/assets/0d347852eff8d530281465ce27de61af263d03cd.png"
+             alt="Jupiter astrological chart illustration">
+        <p class="cover__tagline">Discover how the movement of Jupiter in your chart can give you a promising direction or a new path in&nbsp;your&nbsp;life.</p>
+      </div>
+
+      <div class="cover__footer">
+        <button class="scroll-cta" id="coverScrollBtn" aria-label="Scroll down to begin">
+          <span class="scroll-cta__label">Explore</span>
+          <span class="scroll-cta__circle">
+            <span class="icon" aria-hidden="true">expand_more</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2: TABLE OF CONTENTS
+       ══════════════════════════════════════════ -->
+  <section class="section toc-section scroll-target" id="toc" data-index="1" data-label="Contents">
+    <div class="chapter-illustration" aria-hidden="true">
+      <img class="chapter-illustration__img" src="jupiter-bw.svg" alt="">
+    </div>
+    <div class="col">
+
+      <div class="toc-intro">
+        <p class="eyebrow">Your Report</p>
+        <h2 class="display-heading">Table of Contents</h2>
+        <p class="sub-heading">Four chapters on Jupiter's gifts</p>
+        <p>Lorem ipsum dolor sit amet, the <em>great benefic</em> consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, per stellas et fata.</p>
+      </div>
+
+      <ul class="toc-list" role="list">
+
+        <li class="toc-item">
+          <div class="toc-link" data-target="chapter1" role="button" tabindex="0" aria-label="Navigate to Chapter 1">
+            <span class="toc-num">01</span>
+            <span class="toc-info">
+              <span class="toc-name">Your Cosmic Blueprint</span>
+              <span class="toc-sub">Introduction &amp; the role of Jupiter</span>
+            </span>
+            <img class="toc-bm" data-chapter-id="chapter1"
+                 src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+                 alt="" aria-hidden="true">
+          </div>
+        </li>
+
+        <li class="toc-item">
+          <div class="toc-link" data-target="chapter2" role="button" tabindex="0" aria-label="Navigate to Chapter 2">
+            <span class="toc-num">02</span>
+            <span class="toc-info">
+              <span class="toc-name">Jupiter in Scorpio</span>
+              <span class="toc-sub">Your placement &amp; what it means</span>
+            </span>
+            <img class="toc-bm" data-chapter-id="chapter2"
+                 src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+                 alt="" aria-hidden="true">
+          </div>
+        </li>
+
+        <li class="toc-item">
+          <div class="toc-link" data-target="chapter3" role="button" tabindex="0" aria-label="Navigate to Chapter 3">
+            <span class="toc-num">03</span>
+            <span class="toc-info">
+              <span class="toc-name">The Great Benefic's Aspects</span>
+              <span class="toc-sub">How Jupiter speaks to your chart</span>
+            </span>
+            <img class="toc-bm" data-chapter-id="chapter3"
+                 src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+                 alt="" aria-hidden="true">
+          </div>
+        </li>
+
+        <li class="toc-item">
+          <div class="toc-link" data-target="chapter4" role="button" tabindex="0" aria-label="Navigate to Chapter 4">
+            <span class="toc-num">04</span>
+            <span class="toc-info">
+              <span class="toc-name">Jupiter's Promises</span>
+              <span class="toc-sub">Your path to abundance &amp; growth</span>
+            </span>
+            <img class="toc-bm" data-chapter-id="chapter4"
+                 src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+                 alt="" aria-hidden="true">
+          </div>
+        </li>
+
+      </ul>
+
+      <div class="rule" aria-hidden="true"><span>♃</span></div>
+      <p style="text-align:center; font-family:var(--f-ui); font-size:12px; color:var(--c-gray); letter-spacing:0.05em; margin:0;">
+        Tap any chapter to navigate &nbsp;·&nbsp; Bookmark sections to save your place
+      </p>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3: CHAPTER 1
+       ══════════════════════════════════════════ -->
+  <section class="section chapter-section scroll-target" id="chapter1" data-index="2" data-label="Chapter 1">
+    <div class="chapter-illustration" aria-hidden="true">
+      <img class="chapter-illustration__img" src="jupiter-bw.svg" alt="">
+    </div>
+    <div class="col">
+
+      <p class="eyebrow">Chapter One</p>
+      <h2 class="display-heading">Your Cosmic Blueprint</h2>
+      <p class="sub-heading">The role of Jupiter in your life</p>
+
+      <p class="body-lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit — sed do eiusmod tempor incididunt ut labore et dolore magna aliqua per caelestia signa.</p>
+
+      <div class="rule" aria-hidden="true"><span>✦</span></div>
+
+      <p>In <span class="glos">astrology<span class="glos-tip">The study of the movements and positions of celestial bodies interpreted as having influence on human affairs and the natural world.</span></span>, lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat per stellas.</p>
+
+      <p>Duis aute irure dolor in reprehenderit, the <em>Greater Benefic</em> in voluptate velit esse cillum dolore. Where Jupiter falls in your <span class="glos">natal chart<span class="glos-tip">The map of the sky at the exact moment and location of your birth — a cosmic blueprint of your potential and character.</span></span>, lorem ipsum excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est <em>laborum</em>.</p>
+
+      <div class="pull-quote">
+        <p>"Lorem ipsum dolor sit amet — consectetur adipiscing elit per viam stellarum et fortunam."</p>
+      </div>
+
+      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis quasi <em>architecta</em> beatae vitae dicta sunt explicabo.</p>
+
+      <div class="rule" aria-hidden="true"><span>· · ·</span></div>
+
+      <p>Your <span class="glos">natal chart<span class="glos-tip">The map of the sky at the exact moment and location of your birth — a cosmic blueprint of your potential and character.</span></span> lorem ipsum dolor sit amet nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, and your <span class="glos">rising sign<span class="glos-tip">The zodiac sign rising on the eastern horizon at your birth. It shapes how others perceive you and how you meet the world.</span></span> consectetur adipiscing neque porro quisquam dolorem ipsum quia dolor sit amet.</p>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 4: CHAPTER 2
+       ══════════════════════════════════════════ -->
+  <section class="section chapter-section scroll-target" id="chapter2" data-index="3" data-label="Chapter 2">
+    <div class="chapter-illustration" aria-hidden="true">
+      <img class="chapter-illustration__img" src="jupiter-bw.svg" alt="">
+    </div>
+    <div class="col">
+
+      <p class="eyebrow">Chapter Two</p>
+      <h2 class="display-heading">Jupiter in Scorpio</h2>
+      <p class="sub-heading">The deep water of transformation</p>
+
+      <p class="body-lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit — sed do eiusmod tempor per aquas profundas transformationis incididunt ut labore.</p>
+
+      <div class="rule" aria-hidden="true"><span>✦</span></div>
+
+      <p>Lorem ipsum dolor sit amet, <em>depth luck</em> consectetur adipiscing elit. Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat per vias occultas fortunae.</p>
+
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. The <span class="glos">eighth house<span class="glos-tip">The house governing transformation, shared resources, inheritance, debt, death, rebirth, and the hidden dimensions of life.</span></span> lorem ipsum excepteur sint occaecat cupidatat non proident — sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+      <div class="pull-quote">
+        <p>"Lorem ipsum dolor sit amet — magna fortuna sequitur eos qui in profundum descendunt."</p>
+      </div>
+
+      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta explicabo nemo.</p>
+
+      <div class="card">
+        <p class="card__title">Jupiter in Scorpio · Key Themes</p>
+        <p class="card__type">Your Abundance Terrain</p>
+        <p>Lorem ipsum · Dolor sit amet · Consectetur adipiscing · Sed do eiusmod · Tempor incididunt · Ut labore · Et dolore · Magna aliqua</p>
+      </div>
+
+      <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati.</p>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 5: CHAPTER 3
+       ══════════════════════════════════════════ -->
+  <section class="section chapter-section scroll-target" id="chapter3" data-index="4" data-label="Chapter 3">
+    <div class="chapter-illustration" aria-hidden="true">
+      <img class="chapter-illustration__img" src="jupiter-bw.svg" alt="">
+    </div>
+    <div class="col">
+
+      <p class="eyebrow">Chapter Three</p>
+      <h2 class="display-heading">The Great Benefic's Aspects</h2>
+      <p class="sub-heading">How Jupiter speaks across your chart</p>
+
+      <p class="body-lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Jupiter's gifts are amplified by the <span class="glos">aspects<span class="glos-tip">Angular relationships between planets in a natal chart, measured in degrees. Major aspects include the conjunction (0°), trine (120°), and square (90°).</span></span> it forms — sed do eiusmod tempor incididunt per caelum.</p>
+
+      <div class="rule" aria-hidden="true"><span>✦</span></div>
+
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua per tria signa aspectuum in caelo tuo.</p>
+
+      <div class="card">
+        <p class="card__title">Jupiter <span style="color:var(--c-blue-green)">☌</span> Neptune</p>
+        <p class="card__type">Conjunction · 3° orb</p>
+        <p>Lorem ipsum dolor sit amet. Jupiter <span class="glos">conjunct<span class="glos-tip">A conjunction occurs when two planets occupy the same (or nearly the same) degree of the zodiac, merging their energies completely.</span></span> Neptune consectetur adipiscing elit — sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, quis nostrud exercitation ullamco per visionem.</p>
+      </div>
+
+      <div class="card">
+        <p class="card__title">Jupiter <span style="color:var(--c-blue-green)">△</span> Mars</p>
+        <p class="card__type">Trine · 7° orb</p>
+        <p>Jupiter <span class="glos">trine<span class="glos-tip">A trine is a harmonious 120° aspect between two planets, indicating natural flow, ease, and mutual support between their energies.</span></span> Mars lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      </div>
+
+      <div class="card">
+        <p class="card__title">Jupiter <span style="color:var(--c-red)">□</span> Saturn</p>
+        <p class="card__type">Square · 4° orb</p>
+        <p>Lorem ipsum dolor sit amet. Jupiter <span class="glos">square<span class="glos-tip">A square is a tense 90° aspect between two planets, creating friction, challenge, and pressure that can drive significant growth.</span></span> Saturn consectetur adipiscing elit — duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       SECTION 6: CHAPTER 4
+       ══════════════════════════════════════════ -->
+  <section class="section chapter-section scroll-target" id="chapter4" data-index="5" data-label="Chapter 4">
+    <div class="chapter-illustration" aria-hidden="true">
+      <img class="chapter-illustration__img" src="jupiter-bw.svg" alt="">
+    </div>
+    <div class="col">
+
+      <p class="eyebrow">Chapter Four</p>
+      <h2 class="display-heading">Jupiter's Promises</h2>
+      <p class="sub-heading">Your path forward</p>
+
+      <p class="body-lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit — sed do eiusmod tempor incididunt ut labore et dolore magna promissa per stellas.</p>
+
+      <div class="rule" aria-hidden="true"><span>✦</span></div>
+
+      <ul class="promise-list" role="list">
+        <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit — sed do eiusmod tempor incididunt ut labore et dolore.</li>
+        <li>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat per fata.</li>
+        <li>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur stellarum.</li>
+        <li>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</li>
+        <li>Sed ut perspiciatis unde omnis iste natus error sit voluptatem per caelestia signa et fortunam magnam.</li>
+      </ul>
+
+      <div class="pull-quote">
+        <p>"Lorem ipsum dolor sit amet — consectetur adipiscing elit per mare stellarum navigantes."</p>
+      </div>
+
+      <p>Jupiter <span class="glos">retrograde<span class="glos-tip">When a planet appears to move backward through the zodiac from Earth's vantage point. Retrograde periods turn a planet's themes inward for review and recalibration.</span></span> lorem ipsum dolor sit amet, consectetur adipiscing elit — sed do eiusmod tempor incididunt ut labore et dolore magna aliqua per recursus planetarum.</p>
+
+      <div class="rule" aria-hidden="true"><span>· · ·</span></div>
+
+      <p>Lorem ipsum <span class="glos">transit<span class="glos-tip">A transit occurs when a planet currently moving through the sky forms an aspect to a planet in your natal chart, activating that area of your life.</span></span> dolor sit amet, consectetur adipiscing in a <span class="glos">trine<span class="glos-tip">A trine is a harmonious 120° aspect between two planets, indicating natural flow, ease, and mutual support between their energies.</span></span> elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua per summum caelum fortunae.</p>
+
+      <div class="rule" aria-hidden="true"><span>♃</span></div>
+
+      <p class="report-footer">
+        Report by Stephanie Clement<br>
+        For Sarah Johnson &nbsp;·&nbsp; April 2026
+      </p>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       NOTE HINT TOOLTIP
+       ══════════════════════════════════════════ -->
+  <div class="note-hint" id="noteHint" role="tooltip" aria-hidden="true">
+    Highlight text first, then tap Note
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       BOTTOM TOOLBAR
+       ══════════════════════════════════════════ -->
+  <nav class="bottom-bar" id="bottomBar" aria-label="Report tools">
+    <button class="bb-btn" id="bbMenu" aria-label="Open chapter menu" aria-expanded="false">
+      <span class="icon">menu_book</span>
+      <span class="bb-label">Contents</span>
+    </button>
+    <button class="bb-btn" id="bbNote" aria-label="Add a note" aria-disabled="true">
+      <span class="icon">edit_note</span>
+      <span class="bb-label">Note</span>
+    </button>
+    <button class="bb-btn" id="bbJournal" aria-label="Open journal">
+      <span class="icon">book_2</span>
+      <span class="bb-label">Journal</span>
+    </button>
+    <button class="bb-btn" id="bbTheme" aria-label="Toggle display mode">
+      <span class="icon" id="themeIcon">light_mode</span>
+      <span class="bb-label">Display</span>
+    </button>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       MENU OVERLAY + PANEL
+       ══════════════════════════════════════════ -->
+  <div class="menu-overlay" id="menuOverlay" aria-hidden="true"></div>
+
+  <div class="menu-panel" id="menuPanel" role="dialog" aria-modal="true" aria-label="Report navigation" aria-hidden="true">
+    <div class="menu-panel__header">
+      <span class="menu-panel__title">Jupiter's Promises</span>
+      <button class="menu-panel__close" id="menuClose" aria-label="Close menu">
+        <span class="icon">close</span>
+      </button>
+    </div>
+
+    <div class="menu-tabs" role="tablist">
+      <button class="menu-tab active" id="tabChapters" role="tab" aria-selected="true" aria-controls="panelChapters">Chapters</button>
+      <button class="menu-tab" id="tabNotes" role="tab" aria-selected="false" aria-controls="panelNotes">Notes</button>
+    </div>
+
+    <div class="menu-panel__body">
+      <!-- Chapters panel -->
+      <div id="panelChapters" role="tabpanel" aria-labelledby="tabChapters">
+        <ul class="chapter-list" id="chapterList" aria-label="Report chapters"></ul>
+      </div>
+
+      <!-- Notes panel -->
+      <div id="panelNotes" role="tabpanel" aria-labelledby="tabNotes" hidden>
+        <div class="notes-empty" id="notesEmpty">
+          <span class="icon" style="font-size:32px;color:var(--c-blue-green);opacity:0.5">edit_note</span>
+          <p>No notes yet.<br>Highlight any text to add one.</p>
+        </div>
+        <ul class="notes-list" id="notesList" aria-label="Your notes"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       NOTE DRAWER (slide-up input)
+       ══════════════════════════════════════════ -->
+  <div class="note-drawer" id="noteDrawer" role="dialog" aria-modal="true" aria-label="Add note" aria-hidden="true">
+    <div class="note-drawer__top">
+      <blockquote class="note-drawer__quote" id="noteDrawerQuote"></blockquote>
+      <button class="note-drawer__close-btn" id="noteDrawerClose" aria-label="Cancel note">
+        <span class="icon">close</span>
+      </button>
+    </div>
+    <textarea class="note-drawer__input" id="noteDrawerInput" placeholder="Write your note here…" rows="4" maxlength="600"></textarea>
+    <div class="note-drawer__footer">
+      <button class="note-drawer__cancel" id="noteDrawerCancel">Cancel</button>
+      <button class="note-drawer__save" id="noteDrawerSave">Save Note</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       NOTE POPOVER (hover / tap to view)
+       ══════════════════════════════════════════ -->
+  <div class="note-popover" id="notePopover" role="tooltip" aria-hidden="true">
+    <p class="note-popover__text" id="notePopoverText"></p>
+    <div class="note-popover__actions">
+      <button class="note-popover__btn" id="notePopoverEdit">Edit</button>
+      <button class="note-popover__btn note-popover__btn--delete" id="notePopoverDelete">Delete</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       JOURNAL PANEL
+       ══════════════════════════════════════════ -->
+  <div class="journal-panel" id="journalPanel" role="dialog" aria-modal="true" aria-label="Personal journal" aria-hidden="true">
+    <div class="journal-panel__header">
+      <span class="journal-panel__title">My Journal</span>
+      <button class="journal-panel__close" id="journalClose" aria-label="Close journal">
+        <span class="icon">close</span>
+      </button>
+    </div>
+    <textarea class="journal-panel__textarea" id="journalTextarea" placeholder="Reflect on what you've read. Your words are private and saved here…" aria-label="Journal entry"></textarea>
+    <div class="journal-panel__footer">
+      <span class="journal-panel__saved" id="journalSavedMsg" aria-live="polite"></span>
+      <button class="journal-panel__save-btn" id="journalSave">Save</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SHARE SHEET
+       ══════════════════════════════════════════ -->
+  <div class="share-sheet" id="shareSheet" role="dialog" aria-modal="true" aria-label="Share report" aria-hidden="true">
+    <p class="share-sheet__title">Share Jupiter's Promises</p>
+    <button class="share-sheet__option" id="shareLink">
+      <span class="icon">link</span>Copy Link
+    </button>
+    <button class="share-sheet__option" id="shareEmail">
+      <span class="icon">mail</span>Send via Email
+    </button>
+    <button class="share-sheet__option" id="sharePrint">
+      <span class="icon">print</span>Print / Save PDF
+    </button>
+
+    <button class="share-sheet__cancel" id="shareCancel">Cancel</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SHARE OVERLAY (backdrop for share sheet)
+       ══════════════════════════════════════════ -->
+  <div class="share-overlay" id="shareOverlay" aria-hidden="true"></div>
+
+  <!-- ══════════════════════════════════════════
+       JAVASCRIPT
+       ══════════════════════════════════════════ -->
+  <script>
+  /* ════════════════════════════════════════════════════════
+     JUPITER'S PROMISES — Report Interactions
+     ════════════════════════════════════════════════════════ */
+
+  /* ─── Constants ──────────────────────────────────────── */
+  const SECTIONS = ['cover','toc','chapter1','chapter2','chapter3','chapter4'];
+  const SECTION_LABELS = {
+    cover:    'Cover',
+    toc:      'Table of Contents',
+    chapter1: 'Chapter I',
+    chapter2: 'Chapter II',
+    chapter3: 'Chapter III',
+    chapter4: 'Chapter IV'
+  };
+
+  const BM_ON  = 'http://localhost:3845/assets/6cbcbbff536e8b839a56a36852178b969c25a1cc.svg';
+  const BM_OFF = 'http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg';
+
+  /* ─── State ──────────────────────────────────────────── */
+  let currentIdx     = 0;
+  let navShown       = false;
+  let bookmarked     = new Set(JSON.parse(localStorage.getItem('jp_bookmarks') || '[]'));
+  let notes          = [];           // session-only — annotations live in the DOM and don't survive reload
+  let journalText    = localStorage.getItem('jp_journal') || '';
+  let pendingRange   = null;         // saved Range while note drawer is open
+  let activeNoteId   = null;         // which note the popover is showing
+  let editingNoteId  = null;         // which note is being edited
+  let noteCounter    = 0;            // increments each time a note is created this session
+
+  /* ─── Element refs ───────────────────────────────────── */
+  const reportNav      = document.getElementById('reportNav');
+  const navLabel       = document.getElementById('navLabel');
+  const navPrev        = document.getElementById('navPrev');
+  const navNext        = document.getElementById('navNext');
+  const bookmarkBtn    = document.getElementById('bookmarkBtn');
+  const bmImg          = document.getElementById('bmImg');
+  const backToTop      = document.getElementById('backToTop');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const coverScrollBtn = document.getElementById('coverScrollBtn');
+
+  // Bottom bar
+  const bbMenu     = document.getElementById('bbMenu');
+  const bbNote     = document.getElementById('bbNote');
+  const bbJournal  = document.getElementById('bbJournal');
+  const bbTheme    = document.getElementById('bbTheme');
+
+  // Menu panel
+  const menuOverlay  = document.getElementById('menuOverlay');
+  const menuPanel    = document.getElementById('menuPanel');
+  const menuClose    = document.getElementById('menuClose');
+  const tabChapters  = document.getElementById('tabChapters');
+  const tabNotes     = document.getElementById('tabNotes');
+  const panelChapters= document.getElementById('panelChapters');
+  const panelNotes   = document.getElementById('panelNotes');
+  const chapterList  = document.getElementById('chapterList');
+  const notesEmpty   = document.getElementById('notesEmpty');
+  const notesList    = document.getElementById('notesList');
+
+  // Note drawer
+  const noteDrawer       = document.getElementById('noteDrawer');
+  const noteDrawerQuote  = document.getElementById('noteDrawerQuote');
+  const noteDrawerInput  = document.getElementById('noteDrawerInput');
+  const noteDrawerClose  = document.getElementById('noteDrawerClose');
+  const noteDrawerCancel = document.getElementById('noteDrawerCancel');
+  const noteDrawerSave   = document.getElementById('noteDrawerSave');
+
+  // Note popover
+  const notePopover       = document.getElementById('notePopover');
+  const notePopoverText   = document.getElementById('notePopoverText');
+  const notePopoverEdit   = document.getElementById('notePopoverEdit');
+  const notePopoverDelete = document.getElementById('notePopoverDelete');
+
+  // Journal
+  const journalPanel    = document.getElementById('journalPanel');
+  const journalClose    = document.getElementById('journalClose');
+  const journalTextarea = document.getElementById('journalTextarea');
+  const journalSave     = document.getElementById('journalSave');
+  const journalSavedMsg = document.getElementById('journalSavedMsg');
+
+  // Share sheet (no trigger button in UI, but ESC close kept for safety)
+  const shareSheet  = document.getElementById('shareSheet');
+  const shareOverlay= document.getElementById('shareOverlay');
+
+  /* ══════════════════════════════════════════════════════
+     HELPERS
+     ══════════════════════════════════════════════════════ */
+  function saveState() {
+    localStorage.setItem('jp_bookmarks', JSON.stringify([...bookmarked]));
+    localStorage.setItem('jp_journal',   journalText);
+    // notes are session-only — no localStorage
+  }
+
+  function getScrolledSectionIndex() {
+    let idx = 0;
+    const mid = window.innerHeight / 2;
+    SECTIONS.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.getBoundingClientRect().top <= mid) idx = i;
+    });
+    return idx;
+  }
+
+  function syncBookmarkIcon() {
+    const id = SECTIONS[currentIdx];
+    bmImg.src = bookmarked.has(id) ? BM_ON : BM_OFF;
+  }
+
+  function syncTocBookmarks() {
+    document.querySelectorAll('.toc-bm').forEach(img => {
+      const id = img.dataset.chapterId;
+      img.src = bookmarked.has(id) ? BM_ON : BM_OFF;
+      img.style.opacity = bookmarked.has(id) ? '1' : '0.55';
+    });
+  }
+
+  /* ─── Navigation with loading animation ─────────────── */
+  function navigateTo(targetId) {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    loadingOverlay.classList.add('active');
+    loadingOverlay.setAttribute('aria-hidden', 'false');
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        loadingOverlay.classList.remove('active');
+        loadingOverlay.setAttribute('aria-hidden', 'true');
+      }, 480);
+    }, 380);
+  }
+
+  /* ══════════════════════════════════════════════════════
+     SCROLL HANDLER
+     ══════════════════════════════════════════════════════ */
+  function onScroll() {
+    const y = window.scrollY;
+
+    if (y > 60 && !navShown) {
+      navShown = true;
+      reportNav.classList.add('visible');
+    } else if (y <= 60 && navShown) {
+      navShown = false;
+      reportNav.classList.remove('visible');
+    }
+
+    backToTop.classList.toggle('visible', y > window.innerHeight * 0.6);
+
+    const newIdx = getScrolledSectionIndex();
+    if (newIdx !== currentIdx) {
+      currentIdx = newIdx;
+      const section = document.getElementById(SECTIONS[currentIdx]);
+      navLabel.textContent = section ? (section.dataset.label || '') : '';
+      syncBookmarkIcon();
+    }
+  }
+
+  let rafPending = false;
+  window.addEventListener('scroll', () => {
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(() => { onScroll(); rafPending = false; });
+    }
+  }, { passive: true });
+
+  /* ══════════════════════════════════════════════════════
+     MENU PANEL
+     ══════════════════════════════════════════════════════ */
+  const SECTION_NUMS = ['', '', 'I', 'II', 'III', 'IV'];
+
+  function buildChapterList() {
+    chapterList.innerHTML = '';
+    SECTIONS.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const label = el.dataset.label || SECTION_LABELS[id] || id;
+      const bm    = bookmarked.has(id);
+      const num   = SECTION_NUMS[i] || '';
+      const sub   = id === 'cover' ? 'Jupiter\'s Promises' : id === 'toc' ? 'Contents' : 'Chapter';
+
+      const li   = document.createElement('li');
+      li.className = 'menu-chapter' + (i === currentIdx ? ' menu-chapter--active' : '');
+      li.setAttribute('role', 'button');
+      li.setAttribute('tabindex', '0');
+      li.innerHTML = `
+        ${num ? `<span class="menu-chapter__num">${num}</span>` : ''}
+        <span class="menu-chapter__info">
+          <span class="menu-chapter__name">${label}</span>
+        </span>
+        <img class="menu-chapter__bm ${bm ? 'on' : ''}" src="${bm ? BM_ON : BM_OFF}"
+             alt="${bm ? 'Bookmarked' : ''}" style="opacity:${bm ? '1' : '0.35'}">
+      `;
+      const go = () => { closeMenu(); navigateTo(id); };
+      li.addEventListener('click', go);
+      li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      chapterList.appendChild(li);
+    });
+  }
+
+  function buildNotesList() {
+    notesList.innerHTML = '';
+    if (notes.length === 0) {
+      notesEmpty.hidden = false;
+      notesList.hidden  = true;
+      return;
+    }
+    notesEmpty.hidden = true;
+    notesList.hidden  = false;
+
+    notes.forEach(n => {
+      const li = document.createElement('li');
+      li.className = 'note-item';
+      li.innerHTML = `
+        <p class="note-item__quote">${escHtml(n.selectedText.slice(0, 80))}${n.selectedText.length > 80 ? '…' : ''}</p>
+        <p class="note-item__text">${escHtml(n.noteText)}</p>
+        <div class="note-item__actions">
+          <button class="note-action-btn" data-action="scroll" data-id="${n.id}" aria-label="Go to note">
+            <span class="icon">arrow_forward</span>Jump to
+          </button>
+          <button class="note-action-btn" data-action="edit" data-id="${n.id}" aria-label="Edit note">
+            <span class="icon">edit</span>Edit
+          </button>
+          <button class="note-action-btn note-action-btn--delete" data-action="delete" data-id="${n.id}" aria-label="Delete note">
+            <span class="icon">delete</span>Delete
+          </button>
+        </div>
+      `;
+      notesList.appendChild(li);
+    });
+
+    notesList.querySelectorAll('.note-action-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id     = parseInt(btn.dataset.id, 10);
+        const action = btn.dataset.action;
+        if (action === 'scroll')  scrollToNote(id);
+        if (action === 'edit')    startEditNote(id);
+        if (action === 'delete')  deleteNote(id);
+      });
+    });
+  }
+
+  function openMenu(startTab) {
+    buildChapterList();
+    buildNotesList();
+    menuOverlay.classList.add('open');
+    menuPanel.classList.add('open');
+    menuOverlay.setAttribute('aria-hidden', 'false');
+    menuPanel.setAttribute('aria-hidden', 'false');
+    bbMenu.setAttribute('aria-expanded', 'true');
+    bbMenu.classList.add('active');
+    if (startTab === 'notes') switchMenuTab('notes');
+    else switchMenuTab('chapters');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMenu() {
+    menuOverlay.classList.remove('open');
+    menuPanel.classList.remove('open');
+    menuOverlay.setAttribute('aria-hidden', 'true');
+    menuPanel.setAttribute('aria-hidden', 'true');
+    bbMenu.setAttribute('aria-expanded', 'false');
+    bbMenu.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function switchMenuTab(tab) {
+    if (tab === 'chapters') {
+      tabChapters.classList.add('active');
+      tabChapters.setAttribute('aria-selected', 'true');
+      tabNotes.classList.remove('active');
+      tabNotes.setAttribute('aria-selected', 'false');
+      panelChapters.hidden = false;
+      panelNotes.hidden    = true;
+    } else {
+      tabNotes.classList.add('active');
+      tabNotes.setAttribute('aria-selected', 'true');
+      tabChapters.classList.remove('active');
+      tabChapters.setAttribute('aria-selected', 'false');
+      panelNotes.hidden    = false;
+      panelChapters.hidden = true;
+    }
+  }
+
+  bbMenu.addEventListener('click', () => {
+    if (menuPanel.classList.contains('open')) closeMenu();
+    else openMenu('chapters');
+  });
+  menuClose.addEventListener('click', closeMenu);
+  menuOverlay.addEventListener('click', closeMenu);
+  tabChapters.addEventListener('click', () => switchMenuTab('chapters'));
+  tabNotes.addEventListener('click',    () => switchMenuTab('notes'));
+
+  /* ══════════════════════════════════════════════════════
+     TEXT SELECTION → NOTE BUTTON
+     ══════════════════════════════════════════════════════ */
+  document.addEventListener('selectionchange', () => {
+    const sel = window.getSelection();
+    const text = sel ? sel.toString().trim() : '';
+    if (text.length > 2) {
+      bbNote.classList.add('active');
+      bbNote.removeAttribute('aria-disabled');
+      pendingRange = sel.getRangeAt(0).cloneRange();
+    } else {
+      bbNote.classList.remove('active');
+      bbNote.setAttribute('aria-disabled', 'true');
+      if (!noteDrawer.classList.contains('open')) pendingRange = null;
+    }
+  });
+
+  /* ══════════════════════════════════════════════════════
+     NOTE DRAWER
+     ══════════════════════════════════════════════════════ */
+  function openNoteDrawer(quote, range) {
+    noteDrawerQuote.textContent = quote.slice(0, 140) + (quote.length > 140 ? '…' : '');
+    noteDrawerInput.value = '';
+    editingNoteId = null;
+    noteDrawer.classList.add('open');
+    noteDrawer.setAttribute('aria-hidden', 'false');
+    noteDrawerInput.focus();
+    window.getSelection()?.removeAllRanges();
+  }
+
+  function closeNoteDrawer() {
+    noteDrawer.classList.remove('open');
+    noteDrawer.setAttribute('aria-hidden', 'true');
+    editingNoteId = null;
+    pendingRange  = null;
+    bbNote.classList.remove('active');
+    bbNote.setAttribute('aria-disabled', 'true');
+  }
+
+  /* ─── Note hint tooltip ──────────────────────── */
+  const noteHint = document.getElementById('noteHint');
+  let noteHintTimer = null;
+
+  function showNoteHint() {
+    // Align arrow over the Note button
+    const rect = bbNote.getBoundingClientRect();
+    const mid  = rect.left + rect.width / 2;
+    noteHint.style.left = mid + 'px';
+
+    clearTimeout(noteHintTimer);
+    noteHint.classList.add('visible');
+    noteHintTimer = setTimeout(hideNoteHint, 2500);
+  }
+
+  function hideNoteHint() {
+    noteHint.classList.remove('visible');
+    clearTimeout(noteHintTimer);
+    noteHint.textContent = 'Highlight text first, then tap Note';
+  }
+
+  bbNote.addEventListener('click', () => {
+    if (!pendingRange) {
+      showNoteHint();
+      return;
+    }
+    hideNoteHint();
+    const text = pendingRange.toString().trim();
+    if (!text) return;
+    openNoteDrawer(text, pendingRange);
+  });
+
+  document.addEventListener('pointerdown', e => {
+    if (noteHint.classList.contains('visible') && e.target !== bbNote) {
+      hideNoteHint();
+    }
+  }, { passive: true });
+
+  noteDrawerClose.addEventListener('click',  closeNoteDrawer);
+  noteDrawerCancel.addEventListener('click', closeNoteDrawer);
+
+  noteDrawerSave.addEventListener('click', () => {
+    const noteText = noteDrawerInput.value.trim();
+    if (!noteText) return;
+
+    if (editingNoteId !== null) {
+      // Update existing note
+      const n = notes.find(n => n.id === editingNoteId);
+      if (n) {
+        n.noteText = noteText;
+        // Update popover marker tooltip too
+        const marker = document.querySelector(`.note-marker[data-note-id="${editingNoteId}"]`);
+        if (marker) marker.setAttribute('aria-label', noteText);
+      }
+      editingNoteId = null;
+    } else {
+      // Create new note — wrap the selected range
+      if (!pendingRange) { closeNoteDrawer(); return; }
+      const id = ++noteCounter;
+      const selectedText = pendingRange.toString().trim();
+
+      const wrapped = wrapRangeWithAnnotation(pendingRange, id);
+      if (!wrapped) {
+        // Selection crossed a paragraph boundary — close drawer and nudge user
+        closeNoteDrawer();
+        noteHint.textContent = 'Select text within one paragraph';
+        showNoteHint();
+        return;
+      }
+
+      notes.push({ id, selectedText, noteText, sectionId: SECTIONS[currentIdx] });
+      renumberMarkers(); // set correct sequential number now that push is done
+    }
+
+    saveState();
+    buildNotesList();
+    closeNoteDrawer();
+  });
+
+  /* ─── Wrap a Range with annotation span + marker ─────── */
+  function wrapRangeWithAnnotation(range, id) {
+    // surroundContents fails when the range partially spans element boundaries.
+    // extractContents as a fallback tears the DOM. Instead, check safety first
+    // by cloning and seeing if surroundContents would throw.
+    const wrapper = document.createElement('span');
+    wrapper.className = 'annotated-text';
+    wrapper.dataset.noteId = id;
+
+    try {
+      range.surroundContents(wrapper);
+    } catch(e) {
+      // Selection crosses element boundaries — abort without touching the DOM.
+      return false;
+    }
+
+    // Inject the note marker dot immediately after the wrap
+    const marker = document.createElement('button');
+    marker.className = 'note-marker';
+    marker.dataset.noteId = String(id);
+    marker.setAttribute('aria-label', 'View note');
+    marker.setAttribute('type', 'button');
+    marker.textContent = String(notes.length + 1);
+    wrapper.insertAdjacentElement('afterend', marker);
+
+    attachMarkerListener(marker);
+    return true;
+  }
+
+  function attachMarkerListener(marker) {
+    marker.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = parseInt(marker.dataset.noteId, 10);
+      showNotePopover(id, marker);
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+     NOTE POPOVER
+     ══════════════════════════════════════════════════════ */
+  function showNotePopover(id, anchorEl) {
+    const n = notes.find(n => n.id === id);
+    if (!n) return;
+    activeNoteId = id;
+
+    notePopoverText.textContent = n.noteText;
+    // Make visible first so the browser can measure it
+    notePopover.setAttribute('aria-hidden', 'false');
+
+    // Position after layout — getBoundingClientRect is viewport-relative,
+    // and the popover is position:fixed so no scrollX/Y needed
+    requestAnimationFrame(() => {
+      const rect = anchorEl.getBoundingClientRect();
+      const pw   = notePopover.offsetWidth  || 260;
+      const ph   = notePopover.offsetHeight || 80;
+      let left   = rect.left + rect.width / 2 - pw / 2;
+      let top    = rect.top  - ph - 10;
+      // Keep within viewport
+      left = Math.max(8, Math.min(left, window.innerWidth  - pw - 8));
+      top  = Math.max(8, Math.min(top,  window.innerHeight - ph - 8));
+      notePopover.style.left = left + 'px';
+      notePopover.style.top  = top  + 'px';
+    });
+  }
+
+  function hideNotePopover() {
+    notePopover.setAttribute('aria-hidden', 'true');
+    activeNoteId = null;
+  }
+
+  notePopoverEdit.addEventListener('click', () => {
+    if (activeNoteId === null) return;
+    const id = activeNoteId;
+    hideNotePopover();
+    startEditNote(id);
+  });
+
+  notePopoverDelete.addEventListener('click', () => {
+    if (activeNoteId === null) return;
+    const id = activeNoteId;
+    hideNotePopover();
+    deleteNote(id);
+  });
+
+  document.addEventListener('click', e => {
+    if (!notePopover.contains(e.target) && !e.target.classList.contains('note-marker')) {
+      hideNotePopover();
+    }
+  });
+
+  /* ─── Edit an existing note ──────────────────────────── */
+  function startEditNote(id) {
+    const n = notes.find(n => n.id === id);
+    if (!n) return;
+    closeMenu();
+    editingNoteId = id;
+    noteDrawerQuote.textContent = n.selectedText.slice(0, 140) + (n.selectedText.length > 140 ? '…' : '');
+    noteDrawerInput.value = n.noteText;
+    noteDrawer.classList.add('open');
+    noteDrawer.setAttribute('aria-hidden', 'false');
+    setTimeout(() => noteDrawerInput.focus(), 300);
+  }
+
+  /* ─── Delete a note ──────────────────────────────────── */
+  function deleteNote(id) {
+    notes = notes.filter(n => n.id !== id);
+
+    // Remove DOM annotation + marker
+    const wrapper = document.querySelector(`.annotated-text[data-note-id="${id}"]`);
+    if (wrapper) {
+      const parent = wrapper.parentNode;
+      while (wrapper.firstChild) parent.insertBefore(wrapper.firstChild, wrapper);
+      parent.removeChild(wrapper);
+    }
+    const marker = document.querySelector(`.note-marker[data-note-id="${id}"]`);
+    if (marker) marker.remove();
+
+    renumberMarkers();
+    saveState();
+    buildNotesList();
+  }
+
+  /* ─── Renumber markers after any deletion ────────────── */
+  function renumberMarkers() {
+    notes.forEach((n, i) => {
+      const marker = document.querySelector(`.note-marker[data-note-id="${n.id}"]`);
+      if (marker) marker.textContent = String(i + 1);
+    });
+  }
+
+  /* ─── Scroll to note in document ────────────────────── */
+  function scrollToNote(id) {
+    closeMenu();
+    const marker = document.querySelector(`.note-marker[data-note-id="${id}"]`);
+    if (marker) {
+      setTimeout(() => {
+        marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        marker.animate(
+          [{ transform: 'scale(1)' }, { transform: 'scale(1.6)' }, { transform: 'scale(1)' }],
+          { duration: 500, easing: 'ease-out' }
+        );
+      }, 350);
+    }
+  }
+
+  /* ─── Escape HTML helper ─────────────────────────────── */
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ══════════════════════════════════════════════════════
+     JOURNAL
+     ══════════════════════════════════════════════════════ */
+  function openJournal() {
+    journalTextarea.value = journalText;
+    journalSavedMsg.textContent = '';
+    journalPanel.classList.add('open');
+    journalPanel.setAttribute('aria-hidden', 'false');
+    bbJournal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => journalTextarea.focus(), 300);
+  }
+
+  function closeJournal() {
+    journalPanel.classList.remove('open');
+    journalPanel.setAttribute('aria-hidden', 'true');
+    bbJournal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  bbJournal.addEventListener('click', () => {
+    if (journalPanel.classList.contains('open')) closeJournal();
+    else openJournal();
+  });
+  journalClose.addEventListener('click', closeJournal);
+
+  journalSave.addEventListener('click', () => {
+    journalText = journalTextarea.value;
+    saveState();
+    journalSavedMsg.textContent = 'Saved ✓';
+    setTimeout(() => { journalSavedMsg.textContent = ''; }, 2500);
+  });
+
+  /* ══════════════════════════════════════════════════════
+     SHARE (sheet kept in DOM; no bottom bar trigger)
+     ══════════════════════════════════════════════════════ */
+  function closeShareSheet() {
+    shareOverlay.classList.remove('open');
+    shareSheet.classList.remove('open');
+    shareSheet.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  shareOverlay.addEventListener('click', closeShareSheet);
+
+
+  /* ══════════════════════════════════════════════════════
+     NAV BUTTONS
+     ══════════════════════════════════════════════════════ */
+  navPrev.addEventListener('click', () => {
+    navigateTo(SECTIONS[Math.max(currentIdx - 1, 0)]);
+  });
+  navNext.addEventListener('click', () => {
+    navigateTo(SECTIONS[Math.min(currentIdx + 1, SECTIONS.length - 1)]);
+  });
+
+  /* ══════════════════════════════════════════════════════
+     BOOKMARK TOGGLE
+     ══════════════════════════════════════════════════════ */
+  bookmarkBtn.addEventListener('click', () => {
+    const id = SECTIONS[currentIdx];
+    if (bookmarked.has(id)) {
+      bookmarked.delete(id);
+    } else {
+      bookmarked.add(id);
+      bookmarkBtn.animate(
+        [{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }],
+        { duration: 280, easing: 'ease-out' }
+      );
+    }
+    syncBookmarkIcon();
+    syncTocBookmarks();
+    saveState();
+  });
+
+  /* ══════════════════════════════════════════════════════
+     COVER + TOC LINKS
+     ══════════════════════════════════════════════════════ */
+  coverScrollBtn.addEventListener('click', () => navigateTo('toc'));
+
+  document.querySelectorAll('.toc-link').forEach(link => {
+    const activate = () => {
+      const target = link.dataset.target;
+      if (target) navigateTo(target);
+    };
+    link.addEventListener('click', activate);
+    link.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+    });
+  });
+
+  /* ══════════════════════════════════════════════════════
+     BACK TO TOP
+     ══════════════════════════════════════════════════════ */
+  backToTop.addEventListener('click', () => {
+    loadingOverlay.classList.add('active');
+    loadingOverlay.setAttribute('aria-hidden', 'false');
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        loadingOverlay.classList.remove('active');
+        loadingOverlay.setAttribute('aria-hidden', 'true');
+      }, 600);
+    }, 300);
+  });
+
+  /* ══════════════════════════════════════════════════════
+     GLOSSARY
+     ══════════════════════════════════════════════════════ */
+  document.querySelectorAll('.glos').forEach(term => {
+    term.addEventListener('click', e => {
+      e.stopPropagation();
+      const isOpen = term.classList.contains('open');
+      document.querySelectorAll('.glos.open').forEach(t => t.classList.remove('open'));
+      if (!isOpen) term.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.glos.open').forEach(t => t.classList.remove('open'));
+  });
+
+  /* ══════════════════════════════════════════════════════
+     KEYBOARD: ESC closes panels
+     ══════════════════════════════════════════════════════ */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (menuPanel.classList.contains('open'))   closeMenu();
+      if (noteDrawer.classList.contains('open'))  closeNoteDrawer();
+      if (journalPanel.classList.contains('open'))closeJournal();
+      if (shareSheet.classList.contains('open'))  closeShareSheet();
+      hideNotePopover();
+    }
+  });
+
+
+  /* ══════════════════════════════════════════════════════
+     CLICK ON HIGHLIGHTED TEXT → SHOW POPOVER
+     ══════════════════════════════════════════════════════ */
+  document.addEventListener('click', e => {
+    const annotated = e.target.closest('.annotated-text');
+    if (annotated) {
+      e.stopPropagation();
+      const id     = parseInt(annotated.dataset.noteId, 10);
+      const marker = document.querySelector(`.note-marker[data-note-id="${id}"]`);
+      showNotePopover(id, marker || annotated);
+    }
+  });
+
+  /* ══════════════════════════════════════════════════════
+     LIGHT / DARK MODE TOGGLE
+     ══════════════════════════════════════════════════════ */
+  const themeIcon = document.getElementById('themeIcon');
+
+  function applyTheme(mode) {
+    if (mode === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      themeIcon.textContent = 'dark_mode';
+      bbTheme.setAttribute('aria-label', 'Switch to dark mode');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      themeIcon.textContent = 'light_mode';
+      bbTheme.setAttribute('aria-label', 'Switch to light mode');
+    }
+  }
+
+  // Restore saved preference (default is dark)
+  const savedTheme = localStorage.getItem('jp_theme') || 'dark';
+  applyTheme(savedTheme);
+
+  bbTheme.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = (current === 'light') ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('jp_theme', next);
+  });
+
+  /* ══════════════════════════════════════════════════════
+     INIT
+     ══════════════════════════════════════════════════════ */
+  // Remove any stale note data from old sessions
+  localStorage.removeItem('jp_notes');
+  localStorage.removeItem('jp_note_counter');
+
+  onScroll();
+  syncTocBookmarks();
+  syncBookmarkIcon();
+  </script>
+
+</body>
+</html>
