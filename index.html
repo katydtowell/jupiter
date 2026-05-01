@@ -658,9 +658,10 @@
 
 
     .cover__footer {
-      margin-top: auto;
-      padding-bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-12));
-      padding-top: var(--sp-16);
+      position: absolute;
+      bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-8));
+      left: 0;
+      right: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -898,9 +899,9 @@
         right: var(--sp-12);
         width: 52px; height: 52px;
       }
-      /* Explore button: same — ensure footer clears the bottom bar on desktop */
+      /* Explore button: larger breathing room above bottom bar on desktop */
       .cover__footer {
-        padding-bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-16));
+        bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-12));
       }
 
       /* Light mode overrides for desktop */
