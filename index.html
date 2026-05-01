@@ -67,6 +67,8 @@
        RESET
        ══════════════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Prevent iOS Safari auto-zoom on input focus */
+    input, textarea, select { font-size: max(16px, 1em); }
     html { scroll-behavior: smooth; font-size: 16px; }
     body {
       background: var(--c-space);
@@ -649,6 +651,9 @@
       margin: 0;
       align-self: center;
       text-wrap: pretty;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      overflow-wrap: break-word;
     }
 
 
@@ -1218,7 +1223,7 @@
       border-radius: 10px;
       padding: var(--sp-8) var(--sp-8);
       font-family: var(--f-ui);
-      font-size: 14px;
+      font-size: 16px;
       color: var(--c-white);
       resize: none;
       line-height: 1.6;
@@ -1372,7 +1377,7 @@
       outline: none;
       padding: var(--sp-10);
       font-family: var(--f-body);
-      font-size: 15px;
+      font-size: 16px;
       color: var(--c-white);
       line-height: 1.8;
       resize: none;
