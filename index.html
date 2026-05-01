@@ -2311,7 +2311,10 @@
   /* ══════════════════════════════════════════════════════
      NOTE DRAWER
      ══════════════════════════════════════════════════════ */
+  let _drawerScrollY = 0;
+
   function openNoteDrawer(quote, range) {
+    _drawerScrollY = window.scrollY;   // snapshot before keyboard shifts the page
     noteDrawerQuote.textContent = quote.slice(0, 140) + (quote.length > 140 ? '…' : '');
     noteDrawerInput.value = '';
     editingNoteId = null;
@@ -2322,12 +2325,15 @@
   }
 
   function closeNoteDrawer() {
+    noteDrawerInput.blur();            // dismiss keyboard first
     noteDrawer.classList.remove('open');
     noteDrawer.setAttribute('aria-hidden', 'true');
     editingNoteId = null;
     pendingRange  = null;
     bbNote.classList.remove('active');
     bbNote.setAttribute('aria-disabled', 'true');
+    // Wait for iOS to finish collapsing the keyboard before restoring position
+    setTimeout(() => { window.scrollTo({ top: _drawerScrollY, behavior: 'instant' }); }, 120);
   }
 
   /* ─── Note hint tooltip ──────────────────────── */
