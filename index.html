@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/7.2.96/css/materialdesignicons.min.css">
 
   <style>
     /* ══════════════════════════════════════════════
@@ -312,12 +313,13 @@
       align-items: center;
       justify-content: center;
     }
-    .bookmark-toggle img {
-      width: 20px;
-      height: 26px;
+    .bm-icon {
+      font-size: 26px;
+      color: var(--c-red);
+      line-height: 1;
       transition: transform var(--t-fast);
     }
-    .bookmark-toggle:active img { transform: scale(1.25); }
+    .bookmark-toggle:active .bm-icon { transform: scale(1.25); }
 
     /* ══════════════════════════════════════════════
        BACK TO TOP
@@ -347,7 +349,7 @@
       pointer-events: auto;
       transform: translateY(0) scale(1);
     }
-    .back-to-top .icon { font-size: 22px; }
+    .back-to-top .icon { font-size: 22px; color: var(--c-navy); }
 
     /* ══════════════════════════════════════════════
        LOADING OVERLAY
@@ -692,7 +694,7 @@
       box-shadow: 0 4px 16px rgba(209,60,46,0.4);
       color: var(--c-white);
     }
-    .scroll-cta .icon { font-size: 22px; color: var(--c-white); }
+    .scroll-cta .icon { font-size: 22px; color: var(--c-navy); }
 
     @keyframes bob {
       0%, 100% { transform: translateY(0); }
@@ -762,13 +764,13 @@
     }
 
     .toc-bm {
-      width: 18px; height: 23px;
+      font-size: 23px;
+      color: var(--c-red);
       flex-shrink: 0;
-      opacity: 0.55;
+      line-height: 1;
       transition: opacity var(--t-fast);
     }
-
-    .toc-link:hover .toc-bm { opacity: 0.85; }
+    .toc-link:hover .toc-bm { opacity: 0.75; }
 
     /* ══════════════════════════════════════════════
        CHAPTER SECTIONS
@@ -1093,9 +1095,10 @@
       margin-top: 2px;
     }
     .menu-chapter__bm {
-      width: 14px; height: 18px;
+      font-size: 18px;
+      color: var(--c-red);
       flex-shrink: 0;
-      opacity: 0.45;
+      line-height: 1;
       transition: opacity var(--t-fast);
     }
     .menu-chapter__bm.on { opacity: 1; }
@@ -1549,9 +1552,7 @@
       </button>
     </div>
     <button class="bookmark-toggle" id="bookmarkBtn" aria-label="Bookmark this section">
-      <img id="bmImg"
-           src="bookmark-off.svg"
-           alt="Bookmark" width="20" height="26">
+      <span class="mdi mdi-bookmark-plus-outline bm-icon" id="bmIcon"></span>
     </button>
   </nav>
 
@@ -1638,9 +1639,7 @@
               <span class="toc-name">Your Cosmic Blueprint</span>
               <span class="toc-sub">Introduction &amp; the role of Jupiter</span>
             </span>
-            <img class="toc-bm" data-chapter-id="chapter1"
-                 src="bookmark-off.svg"
-                 alt="" aria-hidden="true">
+            <span class="mdi mdi-bookmark-plus-outline toc-bm" data-chapter-id="chapter1" aria-hidden="true"></span>
           </div>
         </li>
 
@@ -1651,9 +1650,7 @@
               <span class="toc-name">Jupiter in Scorpio</span>
               <span class="toc-sub">Your placement &amp; what it means</span>
             </span>
-            <img class="toc-bm" data-chapter-id="chapter2"
-                 src="bookmark-off.svg"
-                 alt="" aria-hidden="true">
+            <span class="mdi mdi-bookmark-plus-outline toc-bm" data-chapter-id="chapter2" aria-hidden="true"></span>
           </div>
         </li>
 
@@ -1664,9 +1661,7 @@
               <span class="toc-name">The Great Benefic's Aspects</span>
               <span class="toc-sub">How Jupiter speaks to your chart</span>
             </span>
-            <img class="toc-bm" data-chapter-id="chapter3"
-                 src="bookmark-off.svg"
-                 alt="" aria-hidden="true">
+            <span class="mdi mdi-bookmark-plus-outline toc-bm" data-chapter-id="chapter3" aria-hidden="true"></span>
           </div>
         </li>
 
@@ -1677,9 +1672,7 @@
               <span class="toc-name">Jupiter's Promises</span>
               <span class="toc-sub">Your path to abundance &amp; growth</span>
             </span>
-            <img class="toc-bm" data-chapter-id="chapter4"
-                 src="bookmark-off.svg"
-                 alt="" aria-hidden="true">
+            <span class="mdi mdi-bookmark-plus-outline toc-bm" data-chapter-id="chapter4" aria-hidden="true"></span>
           </div>
         </li>
 
@@ -2006,8 +1999,8 @@
     chapter4: 'Chapter IV'
   };
 
-  const BM_ON  = 'bookmark-on.svg';
-  const BM_OFF = 'bookmark-off.svg';
+  const BM_ON  = 'mdi-bookmark';
+  const BM_OFF = 'mdi-bookmark-plus-outline';
 
   /* ─── State ──────────────────────────────────────────── */
   let currentIdx     = 0;
@@ -2026,7 +2019,7 @@
   const navPrev        = document.getElementById('navPrev');
   const navNext        = document.getElementById('navNext');
   const bookmarkBtn    = document.getElementById('bookmarkBtn');
-  const bmImg          = document.getElementById('bmImg');
+  const bmIcon         = document.getElementById('bmIcon');
   const backToTop      = document.getElementById('backToTop');
   const loadingOverlay = document.getElementById('loadingOverlay');
   const coverScrollBtn = document.getElementById('coverScrollBtn');
@@ -2096,14 +2089,19 @@
 
   function syncBookmarkIcon() {
     const id = SECTIONS[currentIdx];
-    bmImg.src = bookmarked.has(id) ? BM_ON : BM_OFF;
+    const on = bookmarked.has(id);
+    bmIcon.classList.toggle(BM_ON,  on);
+    bmIcon.classList.toggle(BM_OFF, !on);
+    bmIcon.classList.toggle('is-on', on);
   }
 
   function syncTocBookmarks() {
-    document.querySelectorAll('.toc-bm').forEach(img => {
-      const id = img.dataset.chapterId;
-      img.src = bookmarked.has(id) ? BM_ON : BM_OFF;
-      img.style.opacity = bookmarked.has(id) ? '1' : '0.55';
+    document.querySelectorAll('.toc-bm').forEach(span => {
+      const id = span.dataset.chapterId;
+      const on = bookmarked.has(id);
+      span.classList.toggle(BM_ON,  on);
+      span.classList.toggle(BM_OFF, !on);
+      span.classList.toggle('on', on);
     });
   }
 
@@ -2179,8 +2177,7 @@
         <span class="menu-chapter__info">
           <span class="menu-chapter__name">${label}</span>
         </span>
-        <img class="menu-chapter__bm ${bm ? 'on' : ''}" src="${bm ? BM_ON : BM_OFF}"
-             alt="${bm ? 'Bookmarked' : ''}" style="opacity:${bm ? '1' : '0.35'}">
+        <span class="mdi ${bm ? BM_ON : BM_OFF} menu-chapter__bm ${bm ? 'on' : ''}"></span>
       `;
       const go = () => { closeMenu(); navigateTo(id); };
       li.addEventListener('click', go);
