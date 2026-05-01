@@ -215,9 +215,9 @@
     [data-theme="light"] .promise-list li { border-bottom-color: rgba(26,30,46,0.09); }
 
     /* ── Back-to-top button: stays red (Jupiter's storm) in light mode ──
-       Only override: restore light icon color (--c-white flips dark globally),
-       and suppress the glow which looks heavy on a light background. */
-    [data-theme="light"] .back-to-top       { color: #f0ece6; box-shadow: none; }
+       Suppress the glow which looks heavy on a light background.
+       Icon color is navy (--c-blue-dark) and doesn't flip, so no color override needed. */
+    [data-theme="light"] .back-to-top       { box-shadow: none; }
     [data-theme="light"] .back-to-top:hover { filter: brightness(1.08); }
 
     /* ── Hard-coded dark-bg elements: restore light text ──
@@ -336,7 +336,7 @@
       border-radius: 50%;
       border: none;
       background: var(--c-red);
-      color: var(--c-white);
+      color: #0E1425;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -351,7 +351,7 @@
       pointer-events: auto;
       transform: translateY(0) scale(1);
     }
-    .back-to-top .icon { font-size: 22px; color: var(--c-navy); }
+    .back-to-top .icon { font-size: 22px; color: #0E1425; }
 
     /* ══════════════════════════════════════════════
        LOADING OVERLAY
@@ -698,9 +698,9 @@
       justify-content: center;
       animation: bob 2.2s ease-in-out infinite;
       box-shadow: 0 4px 16px rgba(209,60,46,0.4);
-      color: var(--c-white);
+      color: #0E1425;
     }
-    .scroll-cta .icon { font-size: 22px; color: var(--c-navy); }
+    .scroll-cta .icon { font-size: 22px; color: #0E1425; }
 
     @keyframes bob {
       0%, 100% { transform: translateY(0); }
@@ -1251,7 +1251,7 @@
       background: var(--c-red); border: none;
       border-radius: var(--btn-radius); padding: 8px 20px;
       font-family: var(--f-ui); font-size: 12px; font-weight: 800;
-      letter-spacing: 0.06em; color: var(--c-white); cursor: pointer;
+      letter-spacing: 0.06em; color: #0E1425; cursor: pointer;
       transition: filter var(--t-fast);
       box-shadow: 0 2px 12px rgba(209,60,46,0.35);
     }
@@ -1283,11 +1283,11 @@
       font-family: var(--f-ui);
       font-size: 10px;
       font-weight: 700;
-      color: #ffffff;
+      color: #0E1425;
       line-height: 1;
     }
     .note-marker:hover { transform: scale(1.2); }
-    .note-marker .icon { font-size: 10px; color: #fff; }
+    .note-marker .icon { font-size: 10px; color: #0E1425; }
 
     /* ══════════════════════════════════════════════
        NOTE POPOVER
@@ -1408,7 +1408,7 @@
       background: var(--c-red); border: none;
       border-radius: var(--btn-radius); padding: 8px 20px;
       font-family: var(--f-ui); font-size: 12px; font-weight: 800;
-      letter-spacing: 0.06em; color: var(--c-white); cursor: pointer;
+      letter-spacing: 0.06em; color: #0E1425; cursor: pointer;
       transition: filter var(--t-fast);
     }
     .journal-panel__save-btn:hover { filter: brightness(1.12); }

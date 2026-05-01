@@ -1,0 +1,13 @@
+{
+  "name": "jupiters-promises",
+  "version": "1.0.0",
+  "description": "Jupiter's Promises – static site",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
