@@ -1,0 +1,4 @@
+# Treat embedded-image SVGs and PNGs as binary so git doesn't diff them
+jupiter.svg     binary
+jupiter-bw.svg  binary
+galaxy-bg.png   binary
