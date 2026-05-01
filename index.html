@@ -867,7 +867,7 @@
       }
 
       body {
-        background-image: url('http://localhost:3845/assets/1eabb080cd5c5246df113225f102794867f4755e.png');
+        background-image: url('galaxy-bg.png');
         background-size: cover;
         background-attachment: fixed;
         background-position: center top;
@@ -1550,7 +1550,7 @@
     </div>
     <button class="bookmark-toggle" id="bookmarkBtn" aria-label="Bookmark this section">
       <img id="bmImg"
-           src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+           src="bookmark-off.svg"
            alt="Bookmark" width="20" height="26">
     </button>
   </nav>
@@ -1578,7 +1578,7 @@
     <!-- Starfield background -->
     <div class="cover__bg">
       <img class="cover__galaxy"
-           src="http://localhost:3845/assets/1eabb080cd5c5246df113225f102794867f4755e.png"
+           src="galaxy-bg.png"
            alt="" aria-hidden="true">
       <div class="cover__fade" aria-hidden="true"></div>
     </div>
@@ -1596,7 +1596,7 @@
       <!-- Jupiter + tagline side by side -->
       <div class="cover__mid">
         <img class="cover__jupiter"
-             src="http://localhost:3845/assets/0d347852eff8d530281465ce27de61af263d03cd.png"
+             src="jupiter.svg"
              alt="Jupiter astrological chart illustration">
         <p class="cover__tagline">Discover how the movement of Jupiter in your chart can give you a promising direction or a new path in&nbsp;your&nbsp;life.</p>
       </div>
@@ -1639,7 +1639,7 @@
               <span class="toc-sub">Introduction &amp; the role of Jupiter</span>
             </span>
             <img class="toc-bm" data-chapter-id="chapter1"
-                 src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+                 src="bookmark-off.svg"
                  alt="" aria-hidden="true">
           </div>
         </li>
@@ -1652,7 +1652,7 @@
               <span class="toc-sub">Your placement &amp; what it means</span>
             </span>
             <img class="toc-bm" data-chapter-id="chapter2"
-                 src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+                 src="bookmark-off.svg"
                  alt="" aria-hidden="true">
           </div>
         </li>
@@ -1665,7 +1665,7 @@
               <span class="toc-sub">How Jupiter speaks to your chart</span>
             </span>
             <img class="toc-bm" data-chapter-id="chapter3"
-                 src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+                 src="bookmark-off.svg"
                  alt="" aria-hidden="true">
           </div>
         </li>
@@ -1678,7 +1678,7 @@
               <span class="toc-sub">Your path to abundance &amp; growth</span>
             </span>
             <img class="toc-bm" data-chapter-id="chapter4"
-                 src="http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg"
+                 src="bookmark-off.svg"
                  alt="" aria-hidden="true">
           </div>
         </li>
@@ -2006,8 +2006,8 @@
     chapter4: 'Chapter IV'
   };
 
-  const BM_ON  = 'http://localhost:3845/assets/6cbcbbff536e8b839a56a36852178b969c25a1cc.svg';
-  const BM_OFF = 'http://localhost:3845/assets/ae970a42e78a6bca68076c4f8da96d069dfc7cc7.svg';
+  const BM_ON  = 'bookmark-on.svg';
+  const BM_OFF = 'bookmark-off.svg';
 
   /* ─── State ──────────────────────────────────────────── */
   let currentIdx     = 0;
