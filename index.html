@@ -598,8 +598,12 @@
       display: block;
       width: 65%;
       flex-shrink: 0;
-      height: auto;
       pointer-events: none;
+    }
+    .cover__jupiter img {
+      display: block;
+      width: 100%;
+      height: auto;
     }
 
     .cover__content {
@@ -649,7 +653,8 @@
       text-align: right;
       line-height: 1.55;
       margin: 0;
-      align-self: center;
+      padding-top: 130px;
+      align-self: flex-start;
       text-wrap: pretty;
       hyphens: auto;
       -webkit-hyphens: auto;
@@ -658,7 +663,7 @@
 
 
     .cover__footer {
-      position: absolute;
+      position: fixed;
       bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-8));
       left: 0;
       right: 0;
@@ -666,6 +671,13 @@
       flex-direction: column;
       align-items: center;
       gap: var(--sp-12);
+      z-index: 150;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .cover__footer.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
 
 
@@ -687,6 +699,16 @@
       font-weight: 700;
       letter-spacing: 0.25em;
       text-transform: uppercase;
+      text-shadow:
+        0 0  4px #0E1425,
+        0 0  4px #0E1425,
+        0 0  8px #0E1425,
+        0 0 16px #0E1425,
+        0 0 16px #0E1425,
+        0 0 32px #0E1425,
+        0 0 32px #0E1425,
+        0 0 56px #0E1425,
+        0 0 56px #0E1425;
     }
     .scroll-cta__circle {
       width: 44px; height: 44px;
@@ -857,6 +879,13 @@
        DESKTOP & TABLET RESPONSIVE
        ══════════════════════════════════════════════ */
 
+    /* Mobile (<768px): cover fills full viewport width so Jupiter is flush left */
+    @media (max-width: 767px) {
+      .cover__content {
+        max-width: 100%;
+      }
+    }
+
     /* Tablet (≥768px): wider column, side breathing room */
     @media (min-width: 768px) {
       :root { --col-w: 540px; }
@@ -864,6 +893,24 @@
       .col { padding-inline: var(--sp-16); }
 
       .cover__logo { width: 100%; }
+
+      /* Big Jupiter layout: tablet and up */
+      .cover__mid {
+        margin-left: -150px;
+        margin-right: -40px;
+        width: calc(100% + var(--sp-10) + 150px + 40px);
+        align-items: center;
+        gap: var(--sp-8);
+      }
+      .cover__jupiter {
+        width: auto;
+        height: clamp(520px, 65vh, 660px);
+        flex-shrink: 0;
+      }
+      .cover__jupiter img {
+        width: auto;
+        height: 100%;
+      }
     }
 
     /* Desktop (≥1024px): full reading experience, space on sides */
@@ -899,11 +946,6 @@
         right: var(--sp-12);
         width: 52px; height: 52px;
       }
-      /* Explore button: larger breathing room above bottom bar on desktop */
-      .cover__footer {
-        bottom: calc(var(--bottom-bar-h) + var(--safe-bot) + var(--sp-12));
-      }
-
       /* Light mode overrides for desktop */
       [data-theme="light"] body {
         background-image: none;
@@ -1607,9 +1649,11 @@
 
       <!-- Jupiter + tagline side by side -->
       <div class="cover__mid">
-        <img class="cover__jupiter"
-             src="jupiter.svg"
-             alt="Jupiter astrological chart illustration">
+        <picture class="cover__jupiter">
+          <source media="(min-width: 768px)" srcset="big-jupiter.svg">
+          <img src="jupiter.svg"
+               alt="Jupiter astrological chart illustration">
+        </picture>
         <p class="cover__tagline">Discover how the movement of Jupiter in your chart can give you a promising direction or a new path in&nbsp;your&nbsp;life.</p>
       </div>
 
@@ -2034,6 +2078,7 @@
   const backToTop      = document.getElementById('backToTop');
   const loadingOverlay = document.getElementById('loadingOverlay');
   const coverScrollBtn = document.getElementById('coverScrollBtn');
+  const coverFooter    = document.querySelector('.cover__footer');
 
   // Bottom bar
   const bbMenu     = document.getElementById('bbMenu');
@@ -2154,6 +2199,7 @@
       navLabel.textContent = section ? (section.dataset.label || '') : '';
       syncBookmarkIcon();
     }
+    coverFooter.classList.toggle('is-hidden', currentIdx !== 0);
   }
 
   let rafPending = false;
