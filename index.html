@@ -884,6 +884,21 @@
       .cover__content {
         max-width: 100%;
       }
+      .cover__tagline {
+        padding-top: 0;
+        align-self: center;
+      }
+    }
+
+    /* Large phone / small tablet portrait (480px–767px): cap Jupiter so tagline stays centred */
+    @media (min-width: 480px) and (max-width: 767px) {
+      .cover__jupiter {
+        width: auto;
+      }
+      .cover__jupiter img {
+        height: 420px;
+        width: auto;
+      }
     }
 
     /* Tablet (≥768px): wider column, side breathing room */
@@ -910,6 +925,10 @@
       .cover__jupiter img {
         width: auto;
         height: 100%;
+      }
+      .cover__tagline {
+        align-self: flex-start;
+        padding-top: 130px;
       }
     }
 
